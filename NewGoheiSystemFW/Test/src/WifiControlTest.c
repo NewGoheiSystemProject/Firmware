@@ -17,6 +17,7 @@
 #define EVENT_RCV_WIFI_GOT_IP    0x0004
 #define EVENT_OK                 0x0008
 #define EVENT_CONNECTED          0x0010
+#define EVENT_RECEIVE_MESSAGE    0x0020
 
 #define EVENT_TIMEOUT            0x8000
 
@@ -28,6 +29,7 @@ const uint8_t STR_WIFI_CONNECTED[] = "WIFI CONNECTED";
 const uint8_t STR_WIFI_GOT_IP[] = "WIFI GOT IP";
 const uint8_t STR_OK[] = "OK";
 const uint8_t STR_CONNECTED[] = ",CONNECT";
+const uint8_t STR_RECEIVE_FROM_SERVER = "+IPD";
 
 const uint8_t STR_CONNECTION_START_FRONT[] = "AT+CIPSTART=\"UDP\",\"";
 const uint8_t STR_NTPSERVER_NAME[] = "ntp.nict.jp";
@@ -39,7 +41,6 @@ const uint8_t STR_ACTUAL_COMMAND_NICT[] = { 0x0B, 0x00, 0x00, 0x00, 0x00, 0x00, 
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-};
 
 
 //UartRingBuffer
@@ -217,7 +218,12 @@ void checkEventState(uint8_t* checkStr, uint16_t length)
 		if(strOfHandle != NULL){//数値に変換
 			connectionHandleAsClient = atoi((const char*)strOfHandle);
 		}
+	}
 
+	if(strstr((const char*)checkStr, (const char*)STR_RECEIVE_FROM_SERVER) != NULL){
+		eventStatus |= EVENT_RECEIVE_MESSAGE;
+		//文字数取得
+		//文字列取得
 	}
 
 
