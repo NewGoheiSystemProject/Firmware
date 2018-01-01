@@ -33,7 +33,13 @@ const uint8_t STR_CONNECTION_START_FRONT[] = "AT+CIPSTART=\"UDP\",\"";
 const uint8_t STR_NTPSERVER_NAME[] = "ntp.nict.jp";
 const uint8_t STR_CONNECTION_START_REAR[] = "\",123,,0";
 const uint8_t STR_CONNECTION_START_NICT[] = "AT+CIPSTART=\"UDP\",\"ntp.nict.jp\",123,,0";
-
+const uint8_t STR_SENDCOMMAND_NICT[] = "AT+CIPSEND=48";
+const uint8_t STR_NEWLINE[] = "\r\n";
+const uint8_t STR_ACTUAL_COMMAND_NICT[] = { 0x0B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+};
 
 
 //UartRingBuffer
@@ -101,13 +107,13 @@ void WifiNTPTest()
 	}
 
 	//wifi connect待ち
-	if(!(eventStatus & EVENT_RCV_WIFI_CONNECTED)){
-		wait4Event(EVENT_RCV_READY, 5000);
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		wait4Event(EVENT_RCV_WIFI_CONNECTED, 5000);
 	}
 
 	//wifi connect待ち
-	if(!(eventStatus & EVENT_RCV_WIFI_GOT_IP)){
-		wait4Event(EVENT_RCV_READY, 5000);
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		wait4Event(EVENT_RCV_WIFI_GOT_IP, 5000);
 	}
 
 
@@ -118,7 +124,22 @@ void WifiNTPTest()
 
 	if(!(eventStatus & EVENT_TIMEOUT)){
 		//nictへの接続成功待ち
+		wait4Event(EVENT_CONNECTED, 5000);
+	}
 
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		//nictへのコマンド送信準備
+		sendMessage(STR_SENDCOMMAND_NICT, sizeof(STR_SENDCOMMAND_NICT) - 1);
+	}
+
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		//OK待ち
+		wait4Event(EVENT_OK, 5000);
+	}
+
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		//nictへのコマンド送信
+		sendMessage(STR_ACTUAL_COMMAND_NICT, sizeof(STR_ACTUAL_COMMAND_NICT));
 	}
 
 	clearEvent();
@@ -235,6 +256,11 @@ void wait4Event(uint16_t eventFlag, uint32_t timeout)
 void sendMessage(uint8_t* message, uint16_t length)
 {
 	HAL_StatusTypeDef result = HAL_UART_Transmit(&huart3, message, length, 1000);
+
+	if(result == HAL_OK){
+		result = HAL_UART_Transmit(&huart3, STR_NEWLINE, sizeof(STR_NEWLINE) - 1, 1000);
+	}
+
 	if(result != HAL_OK){
 		eventStatus |= EVENT_TIMEOUT;
 	}
