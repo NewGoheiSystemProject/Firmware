@@ -16,6 +16,7 @@
 #define EVENT_RCV_WIFI_CONNECTED 0x0002
 #define EVENT_RCV_WIFI_GOT_IP    0x0004
 #define EVENT_OK                 0x0008
+#define EVENT_CONNECTED          0x0010
 
 #define EVENT_TIMEOUT            0x8000
 
@@ -49,6 +50,8 @@ static uint8_t stringWritePos = 0;
 static uint8_t stringRingCount = 0;
 
 static int rcvCnt = 0;
+
+static int connectionHandleAsClient = 0;
 
 static void stringBufferingTask();
 static void eventCheckTask();
@@ -109,11 +112,14 @@ void WifiNTPTest()
 
 
 	if(!(eventStatus & EVENT_TIMEOUT)){
-		//nict.jpのNTP情報取得
+		//nict.jpのNTPに接続
 		sendMessage((uint8_t*)STR_CONNECTION_START_NICT, sizeof(STR_CONNECTION_START_NICT) - 1);
 	}
 
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		//nictへの接続成功待ち
 
+	}
 
 	clearEvent();
 }
@@ -182,6 +188,18 @@ void checkEventState(uint8_t* checkStr, uint16_t length)
 			eventStatus |= EVENT_OK;
 		}
 	}
+
+	if(strstr((const char*)checkStr, (const char*)STR_CONNECTED) != NULL){
+		eventStatus |= EVENT_CONNECTED;
+		char* strOfHandle = strtok((char*)checkStr, ",");
+
+		if(strOfHandle != NULL){//数値に変換
+			connectionHandleAsClient = atoi((const char*)strOfHandle);
+		}
+
+	}
+
+
 }
 
 void clearEvent()
