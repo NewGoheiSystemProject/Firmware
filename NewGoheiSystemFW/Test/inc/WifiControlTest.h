@@ -5,3 +5,4 @@
  *      Author: Shuji
  */
 void WifiModuleBootTest();
+void WifiNTPTest();
