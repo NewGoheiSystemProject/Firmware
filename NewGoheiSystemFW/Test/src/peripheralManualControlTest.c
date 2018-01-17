@@ -46,3 +46,7 @@ void GPIO_relay_anode_control_test()
 	HAL_Delay(2000);
 	setRelay3State(RELAY_STATE_OFF);
 }
+void GPIO_relay_drain_interrupt_test()
+{
+
+}

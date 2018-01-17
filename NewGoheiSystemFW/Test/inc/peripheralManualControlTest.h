@@ -9,5 +9,6 @@
 #define _PERIPHERALMANUALCONTROLTEST_H_
 
 void GPIO_relay_anode_control_test();
+void GPIO_relay_drain_interrupt_test();
 
 #endif /* _PERIPHERALMANUALCONTROLTEST_H_ */
