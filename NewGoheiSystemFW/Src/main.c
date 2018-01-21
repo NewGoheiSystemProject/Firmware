@@ -39,11 +39,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_hal.h"
+#include "adc.h"
 #include "i2c.h"
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "peripheralManualControlTest.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -91,6 +92,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
+  MX_ADC1_Init();
 
   /* USER CODE BEGIN 2 */
 
@@ -104,6 +106,8 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
 
+	  GPIO_relay_anode_control_test();
+	  ADC_DataGet_test();
   }
   /* USER CODE END 3 */
 

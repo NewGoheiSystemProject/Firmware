@@ -1,8 +1,14 @@
 /**
   ******************************************************************************
-  * @file    stm32f4xx_it.h
-  * @brief   This file contains the headers of the interrupt handlers.
+  * File Name          : ADC.h
+  * Description        : This file provides code for the configuration
+  *                      of the ADC instances.
   ******************************************************************************
+  ** This notice applies to any and all portions of this file
+  * that are not between comment pairs USER CODE BEGIN and
+  * USER CODE END. Other portions of this file, whether 
+  * inserted by the user or by software development tools
+  * are owned by their respective copyright owners.
   *
   * COPYRIGHT(c) 2018 STMicroelectronics
   *
@@ -30,31 +36,51 @@
   *
   ******************************************************************************
   */
-
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32F4xx_IT_H
-#define __STM32F4xx_IT_H
-
+#ifndef __adc_H
+#define __adc_H
 #ifdef __cplusplus
  extern "C" {
-#endif 
+#endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 #include "main.h"
-/* Exported types ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
-/* Exported macro ------------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
 
-void SysTick_Handler(void);
-void ADC_IRQHandler(void);
-void EXTI15_10_IRQHandler(void);
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
+
+extern ADC_HandleTypeDef hadc1;
+
+/* USER CODE BEGIN Private defines */
+typedef enum{
+	ADC_CONV_FINISHED,
+	ADC_CONVERTING
+}ADC_Status_t;
+/* USER CODE END Private defines */
+
+extern void _Error_Handler(char *, int);
+
+void MX_ADC1_Init(void);
+
+/* USER CODE BEGIN Prototypes */
+void ADC1_StartConv();
+ADC_Status_t isADC1_Finished();
+uint32_t ADC1_GetData();
+/* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
+#endif /*__ adc_H */
 
-#endif /* __STM32F4xx_IT_H */
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
