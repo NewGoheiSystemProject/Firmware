@@ -9,5 +9,11 @@
 #define BOARDCONTROLER_INC_BOARDCONTROLER_H_
 
 
+void UVOn();
+void UVOff();
+void HeaterSet(uint8_t percentLevel);
+void HeaterOff();
+void FanSet(uint8_t percentLevel);
+void FanOff();
 
 #endif /* BOARDCONTROLER_INC_BOARDCONTROLER_H_ */
