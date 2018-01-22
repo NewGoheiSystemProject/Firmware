@@ -33,5 +33,4 @@ double CalcurateTemperature_ThermistorCalc(double thermistorResistance)
 			+ log(RP / R0)) / B_CONSTANT + 1 / (ROOM_TEMPERATURE - ZERO_KELVIN)) + ZERO_KELVIN;
 
 	return temp;
-
 }
