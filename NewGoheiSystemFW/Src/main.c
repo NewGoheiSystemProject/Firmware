@@ -41,6 +41,7 @@
 #include "stm32f4xx_hal.h"
 #include "adc.h"
 #include "i2c.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
@@ -93,6 +94,7 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_ADC1_Init();
+  MX_TIM3_Init();
 
   /* USER CODE BEGIN 2 */
 

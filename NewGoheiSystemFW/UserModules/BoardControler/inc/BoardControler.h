@@ -8,12 +8,16 @@
 #ifndef BOARDCONTROLER_INC_BOARDCONTROLER_H_
 #define BOARDCONTROLER_INC_BOARDCONTROLER_H_
 
+#include "gpio.h"
 
+void BoardInitialize();
 void UVOn();
 void UVOff();
-void HeaterSet(uint8_t percentLevel);
+void HeaterSet(uint16_t duration_sec);
 void HeaterOff();
-void FanSet(uint8_t percentLevel);
+void HeaterOn();
+void FanSet(uint16_t duration_sec);
 void FanOff();
-
+void FanOn();
+void BoardTask();
 #endif /* BOARDCONTROLER_INC_BOARDCONTROLER_H_ */
