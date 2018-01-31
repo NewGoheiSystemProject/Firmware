@@ -58,8 +58,16 @@ static void pidControl();
 static uint32_t SetTemperature = ROOM_TEMP;
 static int32_t IntegralVal = 0;
 
+static void tempControlCallBack();
 
-static int isControling()
+void tempControlCallBack()
+{
+	HeaterTimerCallBack();
+
+	FanTimerCallBack();
+}
+
+int isControling()
 {
 	int result = STATE_NO_CONTROLING;
 
@@ -90,7 +98,7 @@ void FanTimerCallBack()
 
 	if(FanCounter == 0){
 		FanFlag = FAN_FLAG_OFF;
-		TIM4Stop();
+		TIM3Stop();
 	}
 
 }
@@ -133,6 +141,11 @@ void HeaterSet(uint16_t duration_sec)
 	HeaterFlag = HEATER_FLAG_ON;
 	TIM3Start();
 }
+void NaturalCoolingSet(uint16_t duration_sec)
+{
+	FanCounter = duration_sec;
+	TIM3Start();
+}
 void HeaterOff()
 {
 	setRelay2State(RELAY_STATE_OFF);
@@ -155,7 +168,7 @@ void FanOn()
 }
 void BoardInitialize()
 {
-
+	TIM3IRQAttach(tempControlCallBack);
 }
 void pidControl(uint32_t newTempData, int32_t diff)
 {
@@ -178,8 +191,11 @@ void pidControl(uint32_t newTempData, int32_t diff)
 	if(pidCal > 0){//温める方向ならヒータ
 		HeaterSet((uint16_t)(pidCal * MAX_CONTROL_DURATION));
 	}
-	else{//冷ます方向ならファン
+	else if(pidCal == -1){//冷ます方向にさちったならファン
 		FanSet((uint16_t)(-pidCal * MAX_CONTROL_DURATION));
+	}
+	else{//冷ます方向なら放置
+		NaturalCoolingSet((uint16_t)(-pidCal * MAX_CONTROL_DURATION));
 	}
 }
 void BoardTask()

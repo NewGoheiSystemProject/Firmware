@@ -14,6 +14,7 @@ void BoardInitialize();
 void UVOn();
 void UVOff();
 void HeaterSet(uint16_t duration_sec);
+void NaturalCoolingSet(uint16_t duration_sec);
 void HeaterOff();
 void HeaterOn();
 void FanSet(uint16_t duration_sec);
