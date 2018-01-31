@@ -54,7 +54,7 @@ static double Coef_dif =0.3;//暫定
 
 
 static void pidControl();
-#define ROOM_TEMP (25 * 0xFFF / 2)
+#define ROOM_TEMP (0xFFF / 2)
 static uint32_t SetTemperature = ROOM_TEMP;
 static int32_t IntegralVal = 0;
 
@@ -82,24 +82,26 @@ void HeaterTimerCallBack()
 {
 	if(HeaterCounter > 0){
 		HeaterCounter--;
+		if(HeaterCounter == 0){
+			HeaterFlag = HEATER_FLAG_OFF;
+			TIM3Stop();
+		}
 	}
 
-	if(HeaterCounter == 0){
-		HeaterFlag = HEATER_FLAG_OFF;
-		TIM3Stop();
-	}
+
 
 }
 void FanTimerCallBack()
 {
 	if(FanCounter > 0){
 		FanCounter--;
+		if(FanCounter == 0){
+			FanFlag = FAN_FLAG_OFF;
+			TIM3Stop();
+		}
 	}
 
-	if(FanCounter == 0){
-		FanFlag = FAN_FLAG_OFF;
-		TIM3Stop();
-	}
+
 
 }
 
@@ -156,7 +158,8 @@ void HeaterOn()
 }
 void FanSet(uint16_t duration_sec)
 {
-
+	FanCounter = duration_sec;
+	TIM3Start();
 }
 void FanOff()
 {
@@ -223,11 +226,11 @@ void BoardTask()
 	}
 
 	//Fan制御
-	if(HeaterFlag == HEATER_FLAG_ON){
-		HeaterOn();
+	if(FanFlag == FAN_FLAG_ON){
+		FanOn();
 	}
 	else{
-		HeaterOff();
+		FanOff();
 	}
 
 	//表示更新
