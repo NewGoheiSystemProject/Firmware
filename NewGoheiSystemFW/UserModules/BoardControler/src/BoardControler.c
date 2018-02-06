@@ -179,7 +179,7 @@ void pidControl(uint32_t newTempData, int32_t diff)
 	int32_t prop = ((int32_t)SetTemperature - (int32_t)newTempData);
 
 	//積分偏差を計算
-	IntegralVal += diff;
+	IntegralVal += prop;
 
 	//計算
 	double pidCal = (Coef_prop * (double)prop + Coef_int * (double)IntegralVal + Coef_dif * diff) / (double)SetTemperature;
@@ -205,9 +205,11 @@ void BoardTask()
 {
 	//温度測定
 	static uint32_t prevData = 0;
-	ADC1_StartConv();
-	while(isADC1_Finished() == ADC_CONVERTING);
-	uint32_t data = ADC1_GetData();
+	//ADC1_StartConv();
+	//while(isADC1_Finished() == ADC_CONVERTING);
+	//uint32_t data = ADC1_GetData();
+	uint32_t data = ADC1_OneshotConv();
+
 
 	//動作判定
 	if(isControling() == STATE_NO_CONTROLING){//制御中でなければ

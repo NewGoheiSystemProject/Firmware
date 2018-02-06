@@ -43,7 +43,7 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN 0 */
-static ADC_Status_t ADC1_Status = ADC_CONV_FINISHED;
+volatile static ADC_Status_t ADC1_Status = ADC_CONV_FINISHED;
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc1;
@@ -105,7 +105,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /* ADC1 interrupt Init */
-    HAL_NVIC_SetPriority(ADC_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(ADC_IRQn, 0, 1);
     HAL_NVIC_EnableIRQ(ADC_IRQn);
   /* USER CODE BEGIN ADC1_MspInit 1 */
 
@@ -160,6 +160,14 @@ uint32_t ADC1_GetData()
 	result = HAL_ADC_GetValue(&hadc1);
 
 	return result;
+}
+uint32_t ADC1_OneshotConv()
+{
+	HAL_ADC_Start(&hadc1);
+
+	HAL_ADC_PollForConversion(&hadc1, 100);
+
+	return HAL_ADC_GetValue(&hadc1);
 }
 /* USER CODE END 1 */
 

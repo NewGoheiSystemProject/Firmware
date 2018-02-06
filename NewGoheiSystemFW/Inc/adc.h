@@ -68,6 +68,7 @@ void MX_ADC1_Init(void);
 void ADC1_StartConv();
 ADC_Status_t isADC1_Finished();
 uint32_t ADC1_GetData();
+uint32_t ADC1_OneshotConv();
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
