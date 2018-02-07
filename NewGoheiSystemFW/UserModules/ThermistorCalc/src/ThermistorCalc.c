@@ -21,7 +21,10 @@ static const double ZERO_KELVIN = -273.15;
 
 //! R0測定時の温度
 static const double ROOM_TEMPERATURE = 25.0;
-
+double GetSeriesResistance()
+{
+	return RP;
+}
 double CalcurateTemperature_ThermistorCalc(double thermistorResistance)
 {
 	double temp = 0;
@@ -33,4 +36,12 @@ double CalcurateTemperature_ThermistorCalc(double thermistorResistance)
 			+ log(RP / R0)) / B_CONSTANT + 1 / (ROOM_TEMPERATURE - ZERO_KELVIN)) + ZERO_KELVIN;
 
 	return temp;
+}
+double CalcurateResistance_ThermistorCalc(double temperature)
+{
+	double resistance = 0;
+
+	resistance = R0 * exp(B_CONSTANT * (1 / temperature - 1 / ROOM_TEMPERATURE));
+
+	return resistance;
 }
