@@ -52,7 +52,7 @@ void initialize_LCDDisplayDriver()
 void setChar_LCDDisplayDriver(uint8_t* str, uint8_t length, uint8_t line)
 {
 	if(line == 1){
-		I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x40, TIME_OUT);
+		//I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x40, TIME_OUT);
 	}
 	else if(line == 2){
 		I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x40 | 0x80, TIME_OUT);
