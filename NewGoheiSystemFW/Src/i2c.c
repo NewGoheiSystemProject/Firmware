@@ -121,7 +121,16 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
 } 
 
 /* USER CODE BEGIN 1 */
+HAL_StatusTypeDef I2C1_Master_MEM_WriteByte(uint16_t DevAddress, uint16_t MemAddress, uint8_t Data, uint32_t Timeout)
+{
+	HAL_StatusTypeDef result;
 
+	uint8_t dataToWrite = Data;
+
+	result = HAL_I2C_Mem_Write(&hi2c1, DevAddress, MemAddress, 1, &dataToWrite, 1, Timeout);
+
+	return result;
+}
 /* USER CODE END 1 */
 
 /**
