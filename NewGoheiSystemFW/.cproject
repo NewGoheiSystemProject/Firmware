@@ -69,6 +69,8 @@
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${ProjDirPath}/Test/inc&quot;"/>
                                     									
+                                    <listOptionValue builtIn="false" value="&quot;${ProjDirPath}/UserModules/LCDDisplayDriver/inc&quot;"/>
+                                    									
                                     <listOptionValue builtIn="false" value="&quot;${ProjDirPath}/UserModules/BoardControler/inc&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="${ProjDirPath}/UserModules/ThermistorCalc/inc"/>

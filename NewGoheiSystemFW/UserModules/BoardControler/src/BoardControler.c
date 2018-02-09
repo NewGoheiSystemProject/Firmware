@@ -8,6 +8,7 @@
 #include "gpio.h"
 #include "adc.h"
 #include "tim.h"
+#include "ThermistorCalc.h"
 
 #define RELAY1_ANODE_PORT (GPIOA)
 #define RELAY2_ANODE_PORT (GPIOA)
@@ -53,10 +54,10 @@ static double Coef_int = 0.2;//暫定
 static double Coef_dif =0.3;//暫定
 
 
-static void pidControl();
-#define ROOM_TEMP (0xFFF / 2)
-static uint32_t SetTemperature = ROOM_TEMP;
-static int32_t IntegralVal = 0;
+static void pidControl(double newTempData, double diff);
+#define ROOM_TEMP (double)25.0
+static double SetTemperature = ROOM_TEMP;
+static double IntegralVal = 0;
 
 static void tempControlCallBack();
 
@@ -173,16 +174,16 @@ void BoardInitialize()
 {
 	TIM3IRQAttach(tempControlCallBack);
 }
-void pidControl(uint32_t newTempData, int32_t diff)
+void pidControl(double newTempData, double diff)
 {
 	//比例値
-	int32_t prop = ((int32_t)SetTemperature - (int32_t)newTempData);
+	double prop = SetTemperature - newTempData;
 
 	//積分偏差を計算
 	IntegralVal += prop;
 
 	//計算
-	double pidCal = (Coef_prop * (double)prop + Coef_int * (double)IntegralVal + Coef_dif * diff) / (double)SetTemperature;
+	double pidCal = (Coef_prop * prop + Coef_int * IntegralVal + Coef_dif * diff) / SetTemperature;
 
 	if(pidCal > 1){//MAXにさちらせる
 		pidCal = 1;
@@ -204,20 +205,19 @@ void pidControl(uint32_t newTempData, int32_t diff)
 void BoardTask()
 {
 	//温度測定
-	static uint32_t prevData = 0;
-	//ADC1_StartConv();
-	//while(isADC1_Finished() == ADC_CONVERTING);
-	//uint32_t data = ADC1_GetData();
-	uint32_t data = ADC1_OneshotConv();
+	static double prevTemperature = 0;
+	uint32_t adcData = ADC1_OneshotConv();
+	double thermistorResistance = (double)adcData / ((double)0xFFF - (double)adcData) * GetSeriesResistance();
+	double temperatureData = CalcurateTemperature_ThermistorCalc(thermistorResistance);
 
 
 	//動作判定
 	if(isControling() == STATE_NO_CONTROLING){//制御中でなければ
-		pidControl(data, prevData - data);
+		pidControl(temperatureData, prevTemperature - temperatureData);
 	}
 
 	//前回温度の更新
-	prevData = data;
+	prevTemperature = temperatureData;
 
 	//ヒータ制御
 	if(HeaterFlag == HEATER_FLAG_ON){
