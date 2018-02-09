@@ -49,7 +49,7 @@ void initialize_LCDDisplayDriver()
 		writeResult = I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x0C, TIME_OUT);
 	}
 }
-void setChar_LCDDisplayDriver(char* str, uint8_t line)
+void setChar_LCDDisplayDriver(uint8_t* str, uint8_t length, uint8_t line)
 {
 	if(line == 1){
 		I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x40, TIME_OUT);
@@ -58,7 +58,7 @@ void setChar_LCDDisplayDriver(char* str, uint8_t line)
 		I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x40 | 0x80, TIME_OUT);
 	}
 
-	I2C1_Master_MEM_WriteBytes(DEVICE_ADDRESS, DATA_ADDRESS, (uint8_t*)str, TIME_OUT);
+	I2C1_Master_MEM_WriteBytes(DEVICE_ADDRESS, DATA_ADDRESS, str, length, TIME_OUT);
 }
 void clearChar_LCDDisplayDriver()
 {
