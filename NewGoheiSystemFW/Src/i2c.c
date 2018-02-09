@@ -131,6 +131,14 @@ HAL_StatusTypeDef I2C1_Master_MEM_WriteByte(uint16_t DevAddress, uint16_t MemAdd
 
 	return result;
 }
+HAL_StatusTypeDef I2C1_Master_MEM_WriteBytes(uint16_t DevAddress, uint16_t MemAddress, uint8_t* pData, uint16_t length, uint32_t Timeout)
+{
+	HAL_StatusTypeDef result;
+
+	result = HAL_I2C_Mem_Write(&hi2c1, DevAddress, MemAddress, 1, pData, length, Timeout);
+
+	return result;
+}
 /* USER CODE END 1 */
 
 /**

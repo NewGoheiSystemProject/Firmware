@@ -11,6 +11,7 @@
 #define COMMAND_ADDRESS 0x00
 #define TIME_OUT 100
 
+#define DATA_ADDRESS 0x40
 
 void initialize_LCDDisplayDriver()
 {
@@ -50,9 +51,16 @@ void initialize_LCDDisplayDriver()
 }
 void setChar_LCDDisplayDriver(char* str, uint8_t line)
 {
+	if(line == 1){
+		I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x40, TIME_OUT);
+	}
+	else if(line == 2){
+		I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x40 | 0x80, TIME_OUT);
+	}
 
+	I2C1_Master_MEM_WriteBytes(DEVICE_ADDRESS, DATA_ADDRESS, (uint8_t*)str, TIME_OUT);
 }
 void clearChar_LCDDisplayDriver()
 {
-
+	I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x01, TIME_OUT);
 }
