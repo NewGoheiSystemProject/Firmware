@@ -26,15 +26,16 @@ void initialize_LCDDisplayDriver()
 	}
 
 	if(writeResult == HAL_OK){
-		writeResult = I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x73, TIME_OUT);
+		writeResult = I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x7A, TIME_OUT);
 	}
 
 	if(writeResult == HAL_OK){
-		writeResult = I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x56, TIME_OUT);
+		writeResult = I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x54, TIME_OUT);
 	}
 
 	if(writeResult == HAL_OK){
 		writeResult = I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x6C, TIME_OUT);
+		HAL_Delay(200);
 	}
 
 	if(writeResult == HAL_OK){
@@ -42,17 +43,18 @@ void initialize_LCDDisplayDriver()
 	}
 
 	if(writeResult == HAL_OK){
-		writeResult = I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x01, TIME_OUT);
+		writeResult = I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x0C, TIME_OUT);
 	}
 
 	if(writeResult == HAL_OK){
-		writeResult = I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x0C, TIME_OUT);
+		writeResult = I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x01, TIME_OUT);
 	}
+	HAL_Delay(2);
 }
 void setChar_LCDDisplayDriver(uint8_t* str, uint8_t length, uint8_t line)
 {
 	if(line == 1){
-		//I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x40, TIME_OUT);
+		I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x80, TIME_OUT);
 	}
 	else if(line == 2){
 		I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x40 | 0x80, TIME_OUT);
