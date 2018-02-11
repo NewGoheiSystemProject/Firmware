@@ -99,7 +99,7 @@ int main(void)
   MX_TIM3_Init();
 
   /* USER CODE BEGIN 2 */
-  LCDDriverTest();
+  //LCDDriverTest();
   boardControlTaskTest();
   /* USER CODE END 2 */
 

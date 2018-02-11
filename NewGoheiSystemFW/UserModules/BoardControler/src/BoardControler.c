@@ -9,6 +9,7 @@
 #include "adc.h"
 #include "tim.h"
 #include "ThermistorCalc.h"
+#include "LCDDisplayDriver.h"
 
 #define RELAY1_ANODE_PORT (GPIOA)
 #define RELAY2_ANODE_PORT (GPIOA)
@@ -61,6 +62,9 @@ static double IntegralVal = 0;
 
 static void tempControlCallBack();
 
+static void indicateTemperature(double temperature);
+static void indicateAction(char* actionName);
+
 void tempControlCallBack()
 {
 	HeaterTimerCallBack();
@@ -88,9 +92,6 @@ void HeaterTimerCallBack()
 			TIM3Stop();
 		}
 	}
-
-
-
 }
 void FanTimerCallBack()
 {
@@ -101,9 +102,6 @@ void FanTimerCallBack()
 			TIM3Stop();
 		}
 	}
-
-
-
 }
 
 void setRelay1State(Relay_State_t relayState)
@@ -173,6 +171,7 @@ void FanOn()
 void BoardInitialize()
 {
 	TIM3IRQAttach(tempControlCallBack);
+	initialize_LCDDisplayDriver();
 }
 void pidControl(double newTempData, double diff)
 {
@@ -207,7 +206,7 @@ void BoardTask()
 	//温度測定
 	static double prevTemperature = 0;
 	uint32_t adcData = ADC1_OneshotConv();
-	double thermistorResistance = (double)adcData / ((double)0xFFF - (double)adcData) * GetSeriesResistance();
+	double thermistorResistance = (double)adcData / ((double)0xFFF - (double)adcData + 1.0) * GetSeriesResistance();
 	double temperatureData = CalcurateTemperature_ThermistorCalc(thermistorResistance);
 
 
@@ -236,4 +235,49 @@ void BoardTask()
 	}
 
 	//表示更新
+	clearChar_LCDDisplayDriver();
+	indicateTemperature(temperatureData);
+	char actionName[256];
+	if(HeaterFlag == HEATER_FLAG_ON){
+		sprintf(actionName, "Heating");
+	}
+	else if(FanFlag == FAN_FLAG_ON){
+		sprintf(actionName, "Fan Cooling");
+	}
+	else{
+		sprintf(actionName, "Natural Cooling");
+	}
+	indicateAction(actionName);
+}
+void indicateTemperature(double temperature)
+{
+	//整数部抽出
+	int frontOfPoint = (int)temperature;
+
+	//少数部2桁まで抽出
+	int backOfPoint = (int)((temperature - (double)frontOfPoint) * 100);
+	if(backOfPoint < 0){
+		backOfPoint = -backOfPoint;
+	}
+
+	//文字列作成
+	char str[100];
+	sprintf(str, "%d.%d", frontOfPoint, backOfPoint);
+
+	//バイト列作成
+	uint8_t bytesToIndicate[100];
+	int count = 0;
+	while(str[count] != '\0'){
+		bytesToIndicate[count] = (uint8_t)str[count];
+		count++;
+	}
+	bytesToIndicate[count++] = 0xF2;//上の小丸
+	bytesToIndicate[count++] = 'C';//度CのC
+
+	//表示
+	setChar_LCDDisplayDriver(bytesToIndicate, count, 1);
+}
+void indicateAction(char* actionName)
+{
+
 }
