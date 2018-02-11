@@ -63,7 +63,7 @@ void MX_I2C1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 HAL_StatusTypeDef I2C1_Master_MEM_WriteByte(uint16_t DevAddress, uint16_t MemAddress, uint8_t Data, uint32_t Timeout);
-
+HAL_StatusTypeDef I2C1_Master_MEM_WriteBytes(uint16_t DevAddress, uint16_t MemAddress, uint8_t* pData, uint16_t length, uint32_t Timeout);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

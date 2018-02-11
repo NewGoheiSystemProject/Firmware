@@ -47,6 +47,7 @@
 /* USER CODE BEGIN Includes */
 #include "peripheralManualControlTest.h"
 #include "boardControlTest.h"
+#include "LCDDriverTest.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -98,6 +99,7 @@ int main(void)
   MX_TIM3_Init();
 
   /* USER CODE BEGIN 2 */
+  LCDDriverTest();
   boardControlTaskTest();
   /* USER CODE END 2 */
 
