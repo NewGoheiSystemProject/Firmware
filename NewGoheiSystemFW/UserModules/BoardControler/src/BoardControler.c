@@ -279,5 +279,12 @@ void indicateTemperature(double temperature)
 }
 void indicateAction(char* actionName)
 {
+	uint8_t bytesToIndicate[100];
 
+	int cnt = 0;
+	for(cnt = 0; cnt < strlen(actionName); cnt++){
+		bytesToIndicate[cnt] = (uint8_t)actionName[cnt];
+	}
+
+	setChar_LCDDisplayDriver(bytesToIndicate, strlen(actionName), 2);
 }
