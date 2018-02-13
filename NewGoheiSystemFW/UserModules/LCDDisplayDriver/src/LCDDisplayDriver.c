@@ -65,4 +65,5 @@ void setChar_LCDDisplayDriver(uint8_t* str, uint8_t length, uint8_t line)
 void clearChar_LCDDisplayDriver()
 {
 	I2C1_Master_MEM_WriteByte(DEVICE_ADDRESS, COMMAND_ADDRESS, 0x01, TIME_OUT);
+	HAL_Delay(2);
 }
