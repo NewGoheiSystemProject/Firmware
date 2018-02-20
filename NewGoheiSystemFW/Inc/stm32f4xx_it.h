@@ -51,6 +51,7 @@ void SysTick_Handler(void);
 void ADC_IRQHandler(void);
 void TIM3_IRQHandler(void);
 void EXTI15_10_IRQHandler(void);
+void OTG_FS_IRQHandler(void);
 
 #ifdef __cplusplus
 }

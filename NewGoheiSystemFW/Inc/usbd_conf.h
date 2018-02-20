@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : stm32f4xx_hal_msp.c
-  * Description        : This file provides code for the MSP Initialization 
-  *                      and de-Initialization codes.
+  * @file           : usbd_conf.h
+  * @version        : v1.0_Cube
+  * @brief          : Header for usbd_conf file.
   ******************************************************************************
   * This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -45,56 +45,142 @@
   * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
-  */
+*/
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __USBD_CONF__H__
+#define __USBD_CONF__H__
+#ifdef __cplusplus
+ extern "C" {
+#endif
 /* Includes ------------------------------------------------------------------*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "stm32f4xx.h"
 #include "stm32f4xx_hal.h"
 
-extern void _Error_Handler(char *, int);
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-/**
-  * Initializes the Global MSP.
+/** @addtogroup USBD_OTG_DRIVER
+  * @{
   */
-void HAL_MspInit(void)
-{
-  /* USER CODE BEGIN MspInit 0 */
+  
+/** @defgroup USBD_CONF
+  * @brief usb otg low level driver configuration file
+  * @{
+  */ 
 
-  /* USER CODE END MspInit 0 */
+/** @defgroup USBD_CONF_Exported_Defines
+  * @{
+  */ 
 
-  HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_0);
+/*---------- -----------*/
+#define USBD_MAX_NUM_INTERFACES     1
+/*---------- -----------*/
+#define USBD_MAX_NUM_CONFIGURATION     1
+/*---------- -----------*/
+#define USBD_MAX_STR_DESC_SIZ     512
+/*---------- -----------*/
+#define USBD_SUPPORT_USER_STRING     0
+/*---------- -----------*/
+#define USBD_DEBUG_LEVEL     0
+/*---------- -----------*/
+#define USBD_LPM_ENABLED     0
+/*---------- -----------*/
+#define USBD_SELF_POWERED     1
 
-  /* System interrupt init*/
-  /* MemoryManagement_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(MemoryManagement_IRQn, 0, 0);
-  /* BusFault_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(BusFault_IRQn, 0, 0);
-  /* UsageFault_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(UsageFault_IRQn, 0, 0);
-  /* SVCall_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SVCall_IRQn, 0, 0);
-  /* DebugMonitor_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DebugMonitor_IRQn, 0, 0);
-  /* PendSV_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(PendSV_IRQn, 0, 0);
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+/****************************************/
+/* #define for FS and HS identification */
+#define DEVICE_FS 		0
+#define DEVICE_HS 		1
 
-  /* USER CODE BEGIN MspInit 1 */
+/** @defgroup USBD_Exported_Macros
+  * @{
+  */ 
 
-  /* USER CODE END MspInit 1 */
+ /* Memory management macros */   
+#define USBD_malloc               malloc
+#define USBD_free                 free
+#define USBD_memset               memset
+#define USBD_memcpy               memcpy
+
+#define USBD_Delay   HAL_Delay
+    
+ /* DEBUG macros */  
+
+#if (USBD_DEBUG_LEVEL > 0)
+#define  USBD_UsrLog(...)   printf(__VA_ARGS__);\
+                            printf("\n");
+#else
+#define USBD_UsrLog(...)   
+#endif 
+                            
+                            
+#if (USBD_DEBUG_LEVEL > 1)
+
+#define  USBD_ErrLog(...)   printf("ERROR: ") ;\
+                            printf(__VA_ARGS__);\
+                            printf("\n");
+#else
+#define USBD_ErrLog(...)   
+#endif 
+                            
+                            
+#if (USBD_DEBUG_LEVEL > 2)                         
+#define  USBD_DbgLog(...)   printf("DEBUG : ") ;\
+                            printf(__VA_ARGS__);\
+                            printf("\n");
+#else
+#define USBD_DbgLog(...)                         
+#endif
+                            
+/**
+  * @}
+  */ 
+ 
+    
+    
+/**
+  * @}
+  */ 
+
+/** @defgroup USBD_CONF_Exported_Types
+  * @{
+  */ 
+/**
+  * @}
+  */ 
+
+/** @defgroup USBD_CONF_Exported_Macros
+  * @{
+  */ 
+/**
+  * @}
+  */ 
+
+/** @defgroup USBD_CONF_Exported_Variables
+  * @{
+  */ 
+/**
+  * @}
+  */ 
+
+/** @defgroup USBD_CONF_Exported_FunctionsPrototype
+  * @{
+  */ 
+/**
+  * @}
+  */ 
+#ifdef __cplusplus
 }
+#endif
 
-/* USER CODE BEGIN 1 */
-
-/* USER CODE END 1 */
-
-/**
-  * @}
-  */
+#endif /* __USBD_CONF__H__ */
 
 /**
   * @}
-  */
+  */ 
 
+/**
+  * @}
+  */ 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
