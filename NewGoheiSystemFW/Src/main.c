@@ -59,6 +59,7 @@
 #include "peripheralManualControlTest.h"
 #include "boardControlTest.h"
 #include "LCDDriverTest.h"
+#include "USB_CDC_Test.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -112,7 +113,8 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   //LCDDriverTest();
-  boardControlTaskTest();
+  //boardControlTaskTest();
+  USB_CDC_Test();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -123,8 +125,8 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
 
-	  GPIO_relay_anode_control_test();
-	  ADC_DataGet_test();
+	  //GPIO_relay_anode_control_test();
+	  //ADC_DataGet_test();
   }
   /* USER CODE END 3 */
 
