@@ -10,6 +10,7 @@
 #include "tim.h"
 #include "ThermistorCalc.h"
 #include "LCDDisplayDriver.h"
+#include <string.h>
 
 #define RELAY1_ANODE_PORT (GPIOA)
 #define RELAY2_ANODE_PORT (GPIOA)
@@ -64,6 +65,18 @@ static void tempControlCallBack();
 
 static void indicateTemperature(double temperature);
 static void indicateAction(char* actionName);
+
+#define USB_COMMAND_LENGTH 5
+
+static void usbCommandAction(uint8_t* command);
+static void UVControl(int uvStatus);
+static void ChangeTemp(int upOrDown);
+
+#define UV_ON 1
+#define UV_OFF 0
+
+#define TEMP_UP 1
+#define TEMP_DOWN 0
 
 void tempControlCallBack()
 {
@@ -287,4 +300,20 @@ void indicateAction(char* actionName)
 	}
 
 	setChar_LCDDisplayDriver(bytesToIndicate, strlen(actionName), 2);
+}
+void USBTask()
+{
+
+}
+void usbCommandAction(uint8_t* command)
+{
+
+}
+static void UVControl(int uvStatus)
+{
+
+}
+static void ChangeTemp(int upOrDown)
+{
+
 }

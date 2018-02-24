@@ -122,8 +122,6 @@
 #define Audio_SCL_GPIO_Port GPIOB
 #define Audio_SDA_Pin GPIO_PIN_9
 #define Audio_SDA_GPIO_Port GPIOB
-#define MEMS_INT2_Pin GPIO_PIN_1
-#define MEMS_INT2_GPIO_Port GPIOE
 
 /* ########################## Assert Selection ############################## */
 /**
