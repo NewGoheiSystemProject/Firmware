@@ -10,6 +10,7 @@
 #include "tim.h"
 #include "ThermistorCalc.h"
 #include "LCDDisplayDriver.h"
+#include <string.h>
 
 #define RELAY1_ANODE_PORT (GPIOA)
 #define RELAY2_ANODE_PORT (GPIOA)
@@ -19,6 +20,12 @@
 #define RELAY3_ANODE_PIN (GPIO_PIN_3)
 #define RELAY_STATE_ON GPIO_PIN_SET
 #define RELAY_STATE_OFF GPIO_PIN_RESET
+
+#define UVSWITCH_PORT (GPIOC)
+#define UVSWITCH_PIN (GPIO_PIN_2)
+
+#define SETTINGSWITCH_PORT (GPIOD)
+#define SETTINGSWITCH_PIN (GPIO_PIN_7)
 
 typedef GPIO_PinState Relay_State_t;
 
@@ -64,6 +71,34 @@ static void tempControlCallBack();
 
 static void indicateTemperature(double temperature);
 static void indicateAction(char* actionName);
+
+#define USB_COMMAND_LENGTH 5
+
+static void usbCommandAction(uint8_t* command);
+static void ChangeTemp(int upOrDown);
+
+#define UV_ON 1
+#define UV_OFF 0
+
+#define TEMP_UP 1
+#define TEMP_DOWN 0
+
+static int LCDUpdateFlag = 1;
+
+static int readUVSwitch();
+
+static int readSettingSwitch();
+
+static void buttonTempUpCallBack();
+static void buttonTempDownCallBack();
+
+
+void lcdControlCallBack()
+{
+	LCDUpdateFlag = 1;
+}
+
+
 
 void tempControlCallBack()
 {
@@ -172,6 +207,8 @@ void BoardInitialize()
 {
 	TIM3IRQAttach(tempControlCallBack);
 	initialize_LCDDisplayDriver();
+
+	TIM2IRQAttach(lcdControlCallBack);
 }
 void pidControl(double newTempData, double diff)
 {
@@ -203,51 +240,67 @@ void pidControl(double newTempData, double diff)
 }
 void BoardTask()
 {
-	//温度測定
-	static double prevTemperature = 0;
-	uint32_t adcData = ADC1_OneshotConv();
-	double thermistorResistance = (double)adcData / ((double)0xFFF - (double)adcData + 1.0) * GetSeriesResistance();
-	double temperatureData = CalcurateTemperature_ThermistorCalc(thermistorResistance);
+	if(readSettingSwitch() == 0){
+		//温度測定
+		static double prevTemperature = 0;
+		uint32_t adcData = ADC1_OneshotConv();
+		double thermistorResistance = (double)adcData / ((double)0xFFF - (double)adcData + 1.0) * GetSeriesResistance();
+		double temperatureData = CalcurateTemperature_ThermistorCalc(thermistorResistance);
 
 
-	//動作判定
-	if(isControling() == STATE_NO_CONTROLING){//制御中でなければ
-		pidControl(temperatureData, prevTemperature - temperatureData);
+		//動作判定
+		if(isControling() == STATE_NO_CONTROLING){//制御中でなければ
+			pidControl(temperatureData, prevTemperature - temperatureData);
+		}
+
+		//前回温度の更新
+		prevTemperature = temperatureData;
+
+		//ヒータ制御
+		if(HeaterFlag == HEATER_FLAG_ON){
+			HeaterOn();
+		}
+		else{
+			HeaterOff();
+		}
+
+		//Fan制御
+		if(FanFlag == FAN_FLAG_ON){
+			FanOn();
+		}
+		else{
+			FanOff();
+		}
+
+		//表示更新
+		if(LCDUpdateFlag == 1){
+			clearChar_LCDDisplayDriver();
+			indicateTemperature(temperatureData);
+			char actionName[256];
+			if(HeaterFlag == HEATER_FLAG_ON){
+				sprintf(actionName, "Heating");
+			}
+			else if(FanFlag == FAN_FLAG_ON){
+				sprintf(actionName, "Fan Cooling");
+			}
+			else{
+				sprintf(actionName, "Natural Cooling");
+			}
+			indicateAction(actionName);
+
+			LCDUpdateFlag = 0;
+			TIM2Start();
+		}
+
+		//UVSwitch
+		if(readUVSwitch() == 1){
+			UVOn();
+		}
+		else{
+			UVOff();
+		}
 	}
 
-	//前回温度の更新
-	prevTemperature = temperatureData;
-
-	//ヒータ制御
-	if(HeaterFlag == HEATER_FLAG_ON){
-		HeaterOn();
-	}
-	else{
-		HeaterOff();
-	}
-
-	//Fan制御
-	if(FanFlag == FAN_FLAG_ON){
-		FanOn();
-	}
-	else{
-		FanOff();
-	}
-
-	//表示更新
-	clearChar_LCDDisplayDriver();
-	indicateTemperature(temperatureData);
-	char actionName[256];
-	if(HeaterFlag == HEATER_FLAG_ON){
-		sprintf(actionName, "Heating");
-	}
-	else if(FanFlag == FAN_FLAG_ON){
-		sprintf(actionName, "Fan Cooling");
-	}
-	else{
-		sprintf(actionName, "Natural Cooling");
-	}
-	indicateAction(actionName);
 }
 void indicateTemperature(double temperature)
 {
@@ -287,4 +340,51 @@ void indicateAction(char* actionName)
 	}
 
 	setChar_LCDDisplayDriver(bytesToIndicate, strlen(actionName), 2);
+}
+void USBTask()
+{
+
+}
+void usbCommandAction(uint8_t* command)
+{
+
+}
+static void ChangeTemp(int upOrDown)
+{
+
+}
+int readUVSwitch()
+{
+	int result = 0;
+
+	if(HAL_GPIO_ReadPin(UVSWITCH_PORT, UVSWITCH_PIN) == GPIO_PIN_SET){
+		result = 1;
+	}
+
+	return result;
+}
+void SettingTask()
+{
+	if(readSettingSwitch() == 1){
+
+	}
+
+}
+int readSettingSwitch()
+{
+	int result = 0;
+
+	if(HAL_GPIO_ReadPin(SETTINGSWITCH_PORT, SETTINGSWITCH_PIN) == GPIO_PIN_SET){
+		result = 1;
+	}
+
+	return result;
+}
+void buttonTempUpCallBack()
+{
+
+}
+void buttonTempDownCallBack()
+{
+
 }
