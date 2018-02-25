@@ -92,21 +92,19 @@ static int readSettingSwitch();
 static void buttonTempUpCallBack();
 static void buttonTempDownCallBack();
 
+static int antiChatteringFlag = 0;
+static void antiChatteringCallBack();
 
 void lcdControlCallBack()
 {
 	LCDUpdateFlag = 1;
 }
-
-
-
 void tempControlCallBack()
 {
 	HeaterTimerCallBack();
 
 	FanTimerCallBack();
 }
-
 int isControling()
 {
 	int result = STATE_NO_CONTROLING;
@@ -117,7 +115,6 @@ int isControling()
 
 	return result;
 }
-
 void HeaterTimerCallBack()
 {
 	if(HeaterCounter > 0){
@@ -138,7 +135,6 @@ void FanTimerCallBack()
 		}
 	}
 }
-
 void setRelay1State(Relay_State_t relayState)
 {
 	HAL_GPIO_WritePin(RELAY1_ANODE_PORT, RELAY1_ANODE_PIN, relayState);
@@ -209,6 +205,8 @@ void BoardInitialize()
 	initialize_LCDDisplayDriver();
 
 	TIM2IRQAttach(lcdControlCallBack);
+
+	TIM4IRQAttach(antiChatteringCallBack);
 }
 void pidControl(double newTempData, double diff)
 {
@@ -382,9 +380,25 @@ int readSettingSwitch()
 }
 void buttonTempUpCallBack()
 {
-
+	if(antiChatteringFlag == 0){
+		if(SetTemperature <= 30){
+			SetTemperature++;
+		}
+		antiChatteringFlag = 1;
+		TIM4Start();
+	}
 }
 void buttonTempDownCallBack()
 {
-
+	if(antiChatteringFlag == 0){
+		if(SetTemperature >= 22){
+			SetTemperature--;
+		}
+		antiChatteringFlag = 1;
+		TIM4Start();
+	}
+}
+void antiChatteringCallBack()
+{
+	antiChatteringFlag = 0;
 }

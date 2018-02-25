@@ -63,6 +63,7 @@
 
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN Private defines */
 
@@ -72,6 +73,7 @@ extern void _Error_Handler(char *, int);
 
 void MX_TIM2_Init(void);
 void MX_TIM3_Init(void);
+void MX_TIM4_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 void TIM3Start();
@@ -80,6 +82,9 @@ void TIM3IRQAttach(void (*funcptr)());
 void TIM2Start();
 void TIM2Stop();
 void TIM2IRQAttach(void (*funcptr)());
+void TIM4Start();
+void TIM4Stop();
+void TIM4IRQAttach(void (*funcptr)());
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
