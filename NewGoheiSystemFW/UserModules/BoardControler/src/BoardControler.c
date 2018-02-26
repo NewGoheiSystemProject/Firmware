@@ -49,7 +49,6 @@ static void setRelay3State(Relay_State_t relayState);
 
 
 static void HeaterTimerCallBack();
-
 static void FanTimerCallBack();
 
 static uint16_t HeaterCounter = 0;
@@ -58,9 +57,7 @@ static bool HeaterFlag = FALSE;
 static uint16_t FanCounter = 0;
 static bool FanFlag = FALSE;
 
-#define STATE_CONTROLING 1
-#define STATE_NO_CONTROLING 0
-static int isControling();
+static bool isControling();
 
 #define MAX_CONTROL_DURATION 60//最大を60sec制御とする
 
@@ -80,14 +77,6 @@ static void indicateTemperature(double temperature);
 static void indicateAction(char* actionName);
 
 #define USB_COMMAND_LENGTH 5
-
-
-
-#define UV_ON 1
-#define UV_OFF 0
-
-#define TEMP_UP 1
-#define TEMP_DOWN 0
 
 static bool LCDUpdateFlag = TRUE;
 
@@ -113,12 +102,12 @@ void tempControlCallBack()
 
 	FanTimerCallBack();
 }
-int isControling()
+bool isControling()
 {
-	int result = STATE_NO_CONTROLING;
+	bool result = FALSE;
 
 	if(HeaterCounter > 0 || FanCounter > 0){
-		result = STATE_CONTROLING;
+		result = TRUE;
 	}
 
 	return result;
@@ -249,7 +238,7 @@ void BoardTask()
 
 
 		//動作判定
-		if(isControling() == STATE_NO_CONTROLING){//制御中でなければ
+		if(isControling() == FALSE){//制御中でなければ
 			pidControl(temperatureData, prevTemperature - temperatureData);
 		}
 
