@@ -42,11 +42,11 @@ typedef GPIO_PinState Relay_State_t;
 
 
 static void setRelay1State(Relay_State_t relayState);
-static void toggleRelay1State();
+
 static void setRelay2State(Relay_State_t relayState);
-static void toggleRelay2State();
+
 static void setRelay3State(Relay_State_t relayState);
-static void toggleRelay3State();
+
 
 static void HeaterTimerCallBack();
 
@@ -81,7 +81,7 @@ static void indicateAction(char* actionName);
 
 #define USB_COMMAND_LENGTH 5
 
-static void usbCommandAction(uint8_t* command);
+
 
 #define UV_ON 1
 #define UV_OFF 0
@@ -147,25 +147,14 @@ void setRelay1State(Relay_State_t relayState)
 {
 	HAL_GPIO_WritePin(RELAY1_ANODE_PORT, RELAY1_ANODE_PIN, relayState);
 }
-void toggleRelay1State()
-{
-	HAL_GPIO_TogglePin(RELAY1_ANODE_PORT, RELAY1_ANODE_PIN);
-}
+
 void setRelay2State(Relay_State_t relayState)
 {
 	HAL_GPIO_WritePin(RELAY2_ANODE_PORT, RELAY2_ANODE_PIN, relayState);
 }
-void toggleRelay2State()
-{
-	HAL_GPIO_TogglePin(RELAY2_ANODE_PORT, RELAY2_ANODE_PIN);
-}
 void setRelay3State(Relay_State_t relayState)
 {
 	HAL_GPIO_WritePin(RELAY3_ANODE_PORT, RELAY3_ANODE_PIN, relayState);
-}
-void toggleRelay3State()
-{
-	HAL_GPIO_TogglePin(RELAY3_ANODE_PORT, RELAY3_ANODE_PIN);
 }
 void UVOn()
 {
@@ -356,10 +345,7 @@ void USBTask()
 {
 
 }
-void usbCommandAction(uint8_t* command)
-{
 
-}
 
 int readUVSwitch()
 {
