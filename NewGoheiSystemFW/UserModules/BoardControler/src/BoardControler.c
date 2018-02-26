@@ -17,6 +17,8 @@ typedef enum{
 	FALSE
 }bool;
 
+typedef GPIO_PinState Relay_State_t;
+
 #define RELAY1_ANODE_PORT (GPIOA)
 #define RELAY2_ANODE_PORT (GPIOA)
 #define RELAY3_ANODE_PORT (GPIOA)
@@ -38,15 +40,9 @@ typedef enum{
 #define SETTING_TEMP_DOWN_PORT (GPIOD)
 #define SETTING_TEMP_DOWN_PIN (GPIO_PIN_1)
 
-typedef GPIO_PinState Relay_State_t;
-
-
 static void setRelay1State(Relay_State_t relayState);
-
 static void setRelay2State(Relay_State_t relayState);
-
 static void setRelay3State(Relay_State_t relayState);
-
 
 static void HeaterTimerCallBack();
 static void FanTimerCallBack();
@@ -72,7 +68,6 @@ static double SetTemperature = ROOM_TEMP;
 static double IntegralVal = 0;
 
 static void tempControlCallBack();
-
 static void indicateTemperature(double temperature);
 static void indicateAction(char* actionName);
 
@@ -80,9 +75,9 @@ static void indicateAction(char* actionName);
 
 static bool LCDUpdateFlag = TRUE;
 
-static int readUVSwitch();
+static bool readUVSwitch();
 
-static int readSettingSwitch();
+static bool readSettingSwitch();
 
 static void buttonTempUpCallBack();
 static void buttonTempDownCallBack();
@@ -336,12 +331,12 @@ void USBTask()
 }
 
 
-int readUVSwitch()
+bool readUVSwitch()
 {
-	int result = 0;
+	bool result = FALSE;
 
 	if(HAL_GPIO_ReadPin(UVSWITCH_PORT, UVSWITCH_PIN) == GPIO_PIN_SET){
-		result = 1;
+		result = TRUE;
 	}
 
 	return result;
@@ -361,12 +356,12 @@ void SettingTask()
 	}
 
 }
-int readSettingSwitch()
+bool readSettingSwitch()
 {
-	int result = 0;
+	bool result = FALSE;
 
 	if(HAL_GPIO_ReadPin(SETTINGSWITCH_PORT, SETTINGSWITCH_PIN) == GPIO_PIN_SET){
-		result = 1;
+		result = TRUE;
 	}
 
 	return result;
