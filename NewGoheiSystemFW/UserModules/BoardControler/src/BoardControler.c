@@ -49,13 +49,11 @@ static void setRelay3State(Relay_State_t relayState);
 static void toggleRelay3State();
 
 static void HeaterTimerCallBack();
-#define HEATER_FLAG_OFF 0
-#define HEATER_FLAG_ON 1
 
 static void FanTimerCallBack();
 
 static uint16_t HeaterCounter = 0;
-static int HeaterFlag = 0;
+static bool HeaterFlag = FALSE;
 
 static uint16_t FanCounter = 0;
 static bool FanFlag = FALSE;
@@ -130,7 +128,7 @@ void HeaterTimerCallBack()
 	if(HeaterCounter > 0){
 		HeaterCounter--;
 		if(HeaterCounter == 0){
-			HeaterFlag = HEATER_FLAG_OFF;
+			HeaterFlag = FALSE;
 			TIM3Stop();
 		}
 	}
@@ -180,7 +178,7 @@ void UVOff()
 void HeaterSet(uint16_t duration_sec)
 {
 	HeaterCounter = duration_sec;
-	HeaterFlag = HEATER_FLAG_ON;
+	HeaterFlag = TRUE;
 	TIM3Start();
 }
 void NaturalCoolingSet(uint16_t duration_sec)
@@ -270,7 +268,7 @@ void BoardTask()
 		prevTemperature = temperatureData;
 
 		//ヒータ制御
-		if(HeaterFlag == HEATER_FLAG_ON){
+		if(HeaterFlag == TRUE){
 			HeaterOn();
 		}
 		else{
@@ -290,7 +288,7 @@ void BoardTask()
 			clearChar_LCDDisplayDriver();
 			indicateTemperature(temperatureData);
 			char actionName[256];
-			if(HeaterFlag == HEATER_FLAG_ON){
+			if(HeaterFlag == TRUE){
 				sprintf(actionName, "Heating");
 			}
 			else if(FanFlag == TRUE){
