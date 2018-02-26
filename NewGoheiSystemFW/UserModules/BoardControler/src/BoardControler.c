@@ -49,6 +49,7 @@ typedef enum{
 #define ROOM_TEMP (double)25.0
 #define SET_TEMP_LOWER_LIMIT 22
 #define SET_TEMP_UPPER_LIMIT 30
+#define NUM_OF_AVG 20
 
 /*******************static変数************************/
 static uint16_t HeaterCounter = 0;
@@ -77,7 +78,7 @@ static void buttonTempUpCallBack();
 static void buttonTempDownCallBack();
 static void antiChatteringCallBack();
 static void lcdControlCallBack();
-
+static double simpleAVG(double* dataArray, int numOfData);
 
 
 void lcdControlCallBack()
@@ -191,13 +192,13 @@ void pidControl(double newTempData, double diff)
 	}
 
 	if(pidCal > 0){//温める方向ならヒータ
-		HeaterSet((uint16_t)(pidCal * MAX_CONTROL_DURATION));
+		HeaterSet((uint16_t)(pidCal * MAX_CONTROL_DURATION) + 1);
 	}
 	else if(pidCal == -1){//冷ます方向にさちったならファン
-		FanSet((uint16_t)(-pidCal * MAX_CONTROL_DURATION));
+		FanSet((uint16_t)(-pidCal * MAX_CONTROL_DURATION) + 1);
 	}
 	else{//冷ます方向なら放置
-		NaturalCoolingSet((uint16_t)(-pidCal * MAX_CONTROL_DURATION));
+		NaturalCoolingSet((uint16_t)(-pidCal * MAX_CONTROL_DURATION) + 1);
 	}
 }
 void BoardTask()
@@ -206,11 +207,20 @@ void BoardTask()
 		currentMode = MEASURING_MODE;
 
 		//温度測定
+		double temperatureBuf[NUM_OF_AVG] = { 0 };//移動平均用バッファ
+		int bufCnt = 0;
+		while(bufCnt < NUM_OF_AVG){//20データ貯めるまでサンプリングし続ける
+			uint32_t adcData = ADC1_OneshotConv();
+			double thermistorResistance = (double)adcData / ((double)0xFFF - (double)adcData + 1.0) * GetSeriesResistance();
+			double temperatureData = CalcurateTemperature_ThermistorCalc(thermistorResistance);
+			temperatureBuf[bufCnt] = temperatureData;
+			bufCnt++;
+		}
 		static double prevTemperature = 0;
-		uint32_t adcData = ADC1_OneshotConv();
-		double thermistorResistance = (double)adcData / ((double)0xFFF - (double)adcData + 1.0) * GetSeriesResistance();
-		double temperatureData = CalcurateTemperature_ThermistorCalc(thermistorResistance);
-
+		//uint32_t adcData = ADC1_OneshotConv();
+		//double thermistorResistance = (double)adcData / ((double)0xFFF - (double)adcData + 1.0) * GetSeriesResistance();
+		//double temperatureData = CalcurateTemperature_ThermistorCalc(thermistorResistance);
+		double temperatureData = simpleAVG(temperatureBuf, NUM_OF_AVG);
 
 		//動作判定
 		if(isControling() == FALSE){//制御中でなければ
@@ -369,4 +379,15 @@ void antiChatteringCallBack()
 {
 	antiChatteringFlag = FALSE;
 	TIM4Stop();
+}
+double simpleAVG(double* dataArray, int numOfData)
+{
+	double result = 0;
+
+	int cnt = 0;
+	for(cnt = 0; cnt < numOfData; cnt++){
+		result += (dataArray[cnt] / (double)numOfData);
+	}
+
+	return result;
 }
