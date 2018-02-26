@@ -12,16 +12,24 @@
 #include "LCDDisplayDriver.h"
 #include <string.h>
 
+/***********************型定義**********************************/
 typedef enum{
 	TRUE,
 	FALSE
 }bool;
+typedef enum{
+	MEASURING_MODE,
+	SETTING_MODE
+}mode;
 
+/************************Pinの定義******************************/
 #define UV_CONTROL_PORT (GPIOA)
-#define HEATER_CONTROL_PORT (GPIOA)
-#define FAN_CONTROL_PORT (GPIOA)
 #define UV_CONTROL_PIN (GPIO_PIN_1)
+
+#define HEATER_CONTROL_PORT (GPIOA)
 #define HEATER_CONTROL_PIN (GPIO_PIN_2)
+
+#define FAN_CONTROL_PORT (GPIOA)
 #define FAN_CONTROL_PIN (GPIO_PIN_3)
 
 #define UVSWITCH_PORT (GPIOC)
@@ -36,52 +44,45 @@ typedef enum{
 #define SETTING_TEMP_DOWN_PORT (GPIOD)
 #define SETTING_TEMP_DOWN_PIN (GPIO_PIN_1)
 
-static void HeaterTimerCallBack();
-static void FanTimerCallBack();
+/*******************定数**************************/
+#define MAX_CONTROL_DURATION 60//最大を60sec制御とする
+#define ROOM_TEMP (double)25.0
+#define SET_TEMP_LOWER_LIMIT 22
+#define SET_TEMP_UPPER_LIMIT 30
 
+/*******************static変数************************/
 static uint16_t HeaterCounter = 0;
 static bool HeaterFlag = FALSE;
-
 static uint16_t FanCounter = 0;
 static bool FanFlag = FALSE;
-
-static bool isControling();
-
-#define MAX_CONTROL_DURATION 60//最大を60sec制御とする
-
 static double Coef_prop = 0.8;//暫定
-static double Coef_int = 0.1;//暫定
-static double Coef_dif =0.1;//暫定
-
-
-static void pidControl(double newTempData, double diff);
-#define ROOM_TEMP (double)25.0
+static double Coef_int = 0.0;//暫定
+static double Coef_dif = 0.0;//暫定
 static double SetTemperature = ROOM_TEMP;
 static double IntegralVal = 0;
+static bool LCDUpdateFlag = TRUE;
+static bool antiChatteringFlag = FALSE;
+static mode currentMode = 0;
 
+static void HeaterTimerCallBack();
+static void FanTimerCallBack();
+static bool isControling();
+static void pidControl(double newTempData, double diff);
 static void tempControlCallBack();
 static void indicateTemperature(double temperature);
 static void indicateAction(char* actionName);
-
-#define USB_COMMAND_LENGTH 5
-
-static bool LCDUpdateFlag = TRUE;
-
 static bool readUVSwitch();
-
 static bool readSettingSwitch();
-
 static void buttonTempUpCallBack();
 static void buttonTempDownCallBack();
-
-static bool antiChatteringFlag = FALSE;
 static void antiChatteringCallBack();
+static void lcdControlCallBack();
 
-static int currentMode = 0;
+
 
 void lcdControlCallBack()
 {
-	LCDUpdateFlag = 1;
+	LCDUpdateFlag = TRUE;
 }
 void tempControlCallBack()
 {
@@ -201,8 +202,8 @@ void pidControl(double newTempData, double diff)
 }
 void BoardTask()
 {
-	if(readSettingSwitch() == 0){
-		currentMode = 0;
+	if(readSettingSwitch() == FALSE){
+		currentMode = MEASURING_MODE;
 
 		//温度測定
 		static double prevTemperature = 0;
@@ -236,7 +237,7 @@ void BoardTask()
 		}
 
 		//表示更新
-		if(LCDUpdateFlag == 1){
+		if(LCDUpdateFlag == TRUE){
 			clearChar_LCDDisplayDriver();
 			indicateTemperature(temperatureData);
 			char actionName[256];
@@ -251,12 +252,12 @@ void BoardTask()
 			}
 			indicateAction(actionName);
 
-			LCDUpdateFlag = 0;
+			LCDUpdateFlag = FALSE;
 			TIM2Start();
 		}
 
 		//UVSwitch
-		if(readUVSwitch() == 1){
+		if(readUVSwitch() == TRUE){
 			UVOn();
 		}
 		else{
@@ -304,8 +305,6 @@ void indicateAction(char* actionName)
 
 	setChar_LCDDisplayDriver(bytesToIndicate, strlen(actionName), 2);
 }
-
-
 bool readUVSwitch()
 {
 	bool result = FALSE;
@@ -318,14 +317,14 @@ bool readUVSwitch()
 }
 void SettingTask()
 {
-	if(readSettingSwitch() == 1){
-		currentMode = 1;
+	if(readSettingSwitch() == TRUE){
+		currentMode = SETTING_MODE;
 		//表示更新
-		if(LCDUpdateFlag == 1){
+		if(LCDUpdateFlag == TRUE){
 			clearChar_LCDDisplayDriver();
 			indicateTemperature(SetTemperature);
 
-			LCDUpdateFlag = 0;
+			LCDUpdateFlag = FALSE;
 			TIM2Start();
 		}
 	}
@@ -343,23 +342,22 @@ bool readSettingSwitch()
 }
 void buttonTempUpCallBack()
 {
-	if(currentMode == 1){
+	if(currentMode == SETTING_MODE){
 		if(antiChatteringFlag == FALSE){
-			if(SetTemperature <= 30){
+			if(SetTemperature <= SET_TEMP_UPPER_LIMIT){
 				SetTemperature++;
 			}
 			antiChatteringFlag = TRUE;
 			TIM4Start();
 		}
 	}
-
 }
 void buttonTempDownCallBack()
 {
-	if(currentMode == 1)
+	if(currentMode == SETTING_MODE)
 	{
 		if(antiChatteringFlag == FALSE){
-			if(SetTemperature >= 22){
+			if(SetTemperature >= SET_TEMP_LOWER_LIMIT){
 				SetTemperature--;
 			}
 			antiChatteringFlag = TRUE;
