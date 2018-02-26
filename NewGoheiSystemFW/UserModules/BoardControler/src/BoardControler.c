@@ -325,10 +325,6 @@ void indicateAction(char* actionName)
 
 	setChar_LCDDisplayDriver(bytesToIndicate, strlen(actionName), 2);
 }
-void USBTask()
-{
-
-}
 
 
 bool readUVSwitch()

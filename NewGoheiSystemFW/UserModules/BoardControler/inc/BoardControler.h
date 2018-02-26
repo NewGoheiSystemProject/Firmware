@@ -21,6 +21,5 @@ void FanSet(uint16_t duration_sec);
 void FanOff();
 void FanOn();
 void BoardTask();
-void USBTask();
 void SettingTask();
 #endif /* BOARDCONTROLER_INC_BOARDCONTROLER_H_ */
