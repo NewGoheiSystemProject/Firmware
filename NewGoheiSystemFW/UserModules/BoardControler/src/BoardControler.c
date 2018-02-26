@@ -53,14 +53,12 @@ static void HeaterTimerCallBack();
 #define HEATER_FLAG_ON 1
 
 static void FanTimerCallBack();
-#define FAN_FLAG_OFF 0
-#define FAN_FLAG_ON 1
 
 static uint16_t HeaterCounter = 0;
 static int HeaterFlag = 0;
 
 static uint16_t FanCounter = 0;
-static int FanFlag = 0;
+static bool FanFlag = FALSE;
 
 #define STATE_CONTROLING 1
 #define STATE_NO_CONTROLING 0
@@ -142,7 +140,7 @@ void FanTimerCallBack()
 	if(FanCounter > 0){
 		FanCounter--;
 		if(FanCounter == 0){
-			FanFlag = FAN_FLAG_OFF;
+			FanFlag = FALSE;
 			TIM3Stop();
 		}
 	}
@@ -280,7 +278,7 @@ void BoardTask()
 		}
 
 		//Fan制御
-		if(FanFlag == FAN_FLAG_ON){
+		if(FanFlag == TRUE){
 			FanOn();
 		}
 		else{
@@ -295,7 +293,7 @@ void BoardTask()
 			if(HeaterFlag == HEATER_FLAG_ON){
 				sprintf(actionName, "Heating");
 			}
-			else if(FanFlag == FAN_FLAG_ON){
+			else if(FanFlag == TRUE){
 				sprintf(actionName, "Fan Cooling");
 			}
 			else{
