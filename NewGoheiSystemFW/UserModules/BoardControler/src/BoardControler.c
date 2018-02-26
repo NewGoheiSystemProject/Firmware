@@ -12,6 +12,11 @@
 #include "LCDDisplayDriver.h"
 #include <string.h>
 
+typedef enum{
+	TRUE,
+	FALSE
+}bool;
+
 #define RELAY1_ANODE_PORT (GPIOA)
 #define RELAY2_ANODE_PORT (GPIOA)
 #define RELAY3_ANODE_PORT (GPIOA)
@@ -88,7 +93,7 @@ static void usbCommandAction(uint8_t* command);
 #define TEMP_UP 1
 #define TEMP_DOWN 0
 
-static int LCDUpdateFlag = 1;
+static bool LCDUpdateFlag = TRUE;
 
 static int readUVSwitch();
 
@@ -97,7 +102,7 @@ static int readSettingSwitch();
 static void buttonTempUpCallBack();
 static void buttonTempDownCallBack();
 
-static int antiChatteringFlag = 0;
+static bool antiChatteringFlag = FALSE;
 static void antiChatteringCallBack();
 
 static int currentMode = 0;
@@ -398,11 +403,11 @@ int readSettingSwitch()
 void buttonTempUpCallBack()
 {
 	if(currentMode == 1){
-		if(antiChatteringFlag == 0){
+		if(antiChatteringFlag == FALSE){
 			if(SetTemperature <= 30){
 				SetTemperature++;
 			}
-			antiChatteringFlag = 1;
+			antiChatteringFlag = TRUE;
 			TIM4Start();
 		}
 	}
@@ -412,17 +417,17 @@ void buttonTempDownCallBack()
 {
 	if(currentMode == 1)
 	{
-		if(antiChatteringFlag == 0){
+		if(antiChatteringFlag == FALSE){
 			if(SetTemperature >= 22){
 				SetTemperature--;
 			}
-			antiChatteringFlag = 1;
+			antiChatteringFlag = TRUE;
 			TIM4Start();
 		}
 	}
 }
 void antiChatteringCallBack()
 {
-	antiChatteringFlag = 0;
+	antiChatteringFlag = FALSE;
 	TIM4Stop();
 }
