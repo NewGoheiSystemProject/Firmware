@@ -68,6 +68,7 @@ void GPIO_relay_drain_interrupt_test()
 {
 	CallBackFunc = callBack;
 }
+/*
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(CallBackFunc != NULL)
@@ -75,6 +76,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		CallBackFunc();
 	}
 }
+*/
 void callBack()
 {
 	toggleRelay1State();

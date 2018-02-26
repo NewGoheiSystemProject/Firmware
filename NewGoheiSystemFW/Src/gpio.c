@@ -50,7 +50,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "gpio.h"
 /* USER CODE BEGIN 0 */
-
+static void (*funcPtrCallBack[16])();
+static int getIndexFromGPIO_Pin(uint16_t GPIO_Pin);
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/
@@ -273,7 +274,79 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 2 */
+void IRQAttach_GPIO(uint16_t pin, void (*funcPtr)())
+{
+	int index = getIndexFromGPIO_Pin(pin);
 
+	funcPtrCallBack[index] = funcPtr;
+}
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	int index = getIndexFromGPIO_Pin(GPIO_Pin);
+
+	if(funcPtrCallBack[index] != NULL){
+		funcPtrCallBack[index]();
+	}
+}
+int getIndexFromGPIO_Pin(uint16_t GPIO_Pin)
+{
+	int result = 0;
+
+	switch(GPIO_Pin){
+	case GPIO_PIN_0:
+		result = 0;
+		break;
+	case GPIO_PIN_1:
+		result = 1;
+		break;
+	case GPIO_PIN_2:
+		result = 2;
+		break;
+	case GPIO_PIN_3:
+		result = 3;
+		break;
+	case GPIO_PIN_4:
+		result = 4;
+		break;
+	case GPIO_PIN_5:
+		result = 5;
+		break;
+	case GPIO_PIN_6:
+		result = 6;
+		break;
+	case GPIO_PIN_7:
+		result = 7;
+		break;
+	case GPIO_PIN_8:
+		result = 8;
+		break;
+	case GPIO_PIN_9:
+		result = 9;
+		break;
+	case GPIO_PIN_10:
+		result = 10;
+		break;
+	case GPIO_PIN_11:
+		result = 11;
+		break;
+	case GPIO_PIN_12:
+		result = 12;
+		break;
+	case GPIO_PIN_13:
+		result = 13;
+		break;
+	case GPIO_PIN_14:
+		result = 14;
+		break;
+	case GPIO_PIN_15:
+		result = 15;
+		break;
+	default:
+		break;
+	}
+
+	return result;
+}
 /* USER CODE END 2 */
 
 /**

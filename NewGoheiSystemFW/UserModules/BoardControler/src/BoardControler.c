@@ -27,6 +27,12 @@
 #define SETTINGSWITCH_PORT (GPIOD)
 #define SETTINGSWITCH_PIN (GPIO_PIN_7)
 
+#define SETTING_TEMP_UP_PORT (GPIOD)
+#define SETTING_TEMP_UP_PIN (GPIO_PIN_3)
+
+#define SETTING_TEMP_DOWN_PORT (GPIOD)
+#define SETTING_TEMP_DOWN_PIN (GPIO_PIN_1)
+
 typedef GPIO_PinState Relay_State_t;
 
 
@@ -57,9 +63,9 @@ static int isControling();
 
 #define MAX_CONTROL_DURATION 60//最大を60sec制御とする
 
-static double Coef_prop = 0.5;//暫定
-static double Coef_int = 0.2;//暫定
-static double Coef_dif =0.3;//暫定
+static double Coef_prop = 0.8;//暫定
+static double Coef_int = 0.1;//暫定
+static double Coef_dif =0.1;//暫定
 
 
 static void pidControl(double newTempData, double diff);
@@ -75,7 +81,6 @@ static void indicateAction(char* actionName);
 #define USB_COMMAND_LENGTH 5
 
 static void usbCommandAction(uint8_t* command);
-static void ChangeTemp(int upOrDown);
 
 #define UV_ON 1
 #define UV_OFF 0
@@ -94,6 +99,8 @@ static void buttonTempDownCallBack();
 
 static int antiChatteringFlag = 0;
 static void antiChatteringCallBack();
+
+static int currentMode = 0;
 
 void lcdControlCallBack()
 {
@@ -207,6 +214,9 @@ void BoardInitialize()
 	TIM2IRQAttach(lcdControlCallBack);
 
 	TIM4IRQAttach(antiChatteringCallBack);
+
+	IRQAttach_GPIO(SETTING_TEMP_DOWN_PIN, buttonTempDownCallBack);
+	IRQAttach_GPIO(SETTING_TEMP_UP_PIN, buttonTempUpCallBack);
 }
 void pidControl(double newTempData, double diff)
 {
@@ -239,6 +249,8 @@ void pidControl(double newTempData, double diff)
 void BoardTask()
 {
 	if(readSettingSwitch() == 0){
+		currentMode = 0;
+
 		//温度測定
 		static double prevTemperature = 0;
 		uint32_t adcData = ADC1_OneshotConv();
@@ -347,10 +359,7 @@ void usbCommandAction(uint8_t* command)
 {
 
 }
-static void ChangeTemp(int upOrDown)
-{
 
-}
 int readUVSwitch()
 {
 	int result = 0;
@@ -364,7 +373,15 @@ int readUVSwitch()
 void SettingTask()
 {
 	if(readSettingSwitch() == 1){
+		currentMode = 1;
+		//表示更新
+		if(LCDUpdateFlag == 1){
+			clearChar_LCDDisplayDriver();
+			indicateTemperature(SetTemperature);
 
+			LCDUpdateFlag = 0;
+			TIM2Start();
+		}
 	}
 
 }
@@ -380,25 +397,32 @@ int readSettingSwitch()
 }
 void buttonTempUpCallBack()
 {
-	if(antiChatteringFlag == 0){
-		if(SetTemperature <= 30){
-			SetTemperature++;
+	if(currentMode == 1){
+		if(antiChatteringFlag == 0){
+			if(SetTemperature <= 30){
+				SetTemperature++;
+			}
+			antiChatteringFlag = 1;
+			TIM4Start();
 		}
-		antiChatteringFlag = 1;
-		TIM4Start();
 	}
+
 }
 void buttonTempDownCallBack()
 {
-	if(antiChatteringFlag == 0){
-		if(SetTemperature >= 22){
-			SetTemperature--;
+	if(currentMode == 1)
+	{
+		if(antiChatteringFlag == 0){
+			if(SetTemperature >= 22){
+				SetTemperature--;
+			}
+			antiChatteringFlag = 1;
+			TIM4Start();
 		}
-		antiChatteringFlag = 1;
-		TIM4Start();
 	}
 }
 void antiChatteringCallBack()
 {
 	antiChatteringFlag = 0;
+	TIM4Stop();
 }

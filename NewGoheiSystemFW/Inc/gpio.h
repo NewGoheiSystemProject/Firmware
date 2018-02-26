@@ -69,7 +69,7 @@
 void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void IRQAttach_GPIO(uint16_t pin, void (*funcPtr)());
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
