@@ -17,16 +17,12 @@ typedef enum{
 	FALSE
 }bool;
 
-typedef GPIO_PinState Relay_State_t;
-
-#define RELAY1_ANODE_PORT (GPIOA)
-#define RELAY2_ANODE_PORT (GPIOA)
-#define RELAY3_ANODE_PORT (GPIOA)
-#define RELAY1_ANODE_PIN (GPIO_PIN_1)
-#define RELAY2_ANODE_PIN (GPIO_PIN_2)
-#define RELAY3_ANODE_PIN (GPIO_PIN_3)
-#define RELAY_STATE_ON GPIO_PIN_SET
-#define RELAY_STATE_OFF GPIO_PIN_RESET
+#define UV_CONTROL_PORT (GPIOA)
+#define HEATER_CONTROL_PORT (GPIOA)
+#define FAN_CONTROL_PORT (GPIOA)
+#define UV_CONTROL_PIN (GPIO_PIN_1)
+#define HEATER_CONTROL_PIN (GPIO_PIN_2)
+#define FAN_CONTROL_PIN (GPIO_PIN_3)
 
 #define UVSWITCH_PORT (GPIOC)
 #define UVSWITCH_PIN (GPIO_PIN_2)
@@ -39,10 +35,6 @@ typedef GPIO_PinState Relay_State_t;
 
 #define SETTING_TEMP_DOWN_PORT (GPIOD)
 #define SETTING_TEMP_DOWN_PIN (GPIO_PIN_1)
-
-static void setRelay1State(Relay_State_t relayState);
-static void setRelay2State(Relay_State_t relayState);
-static void setRelay3State(Relay_State_t relayState);
 
 static void HeaterTimerCallBack();
 static void FanTimerCallBack();
@@ -127,26 +119,13 @@ void FanTimerCallBack()
 		}
 	}
 }
-void setRelay1State(Relay_State_t relayState)
-{
-	HAL_GPIO_WritePin(RELAY1_ANODE_PORT, RELAY1_ANODE_PIN, relayState);
-}
-
-void setRelay2State(Relay_State_t relayState)
-{
-	HAL_GPIO_WritePin(RELAY2_ANODE_PORT, RELAY2_ANODE_PIN, relayState);
-}
-void setRelay3State(Relay_State_t relayState)
-{
-	HAL_GPIO_WritePin(RELAY3_ANODE_PORT, RELAY3_ANODE_PIN, relayState);
-}
 void UVOn()
 {
-	setRelay1State(RELAY_STATE_ON);
+	HAL_GPIO_WritePin(UV_CONTROL_PORT, UV_CONTROL_PIN, GPIO_PIN_SET);
 }
 void UVOff()
 {
-	setRelay1State(RELAY_STATE_OFF);
+	HAL_GPIO_WritePin(UV_CONTROL_PORT, UV_CONTROL_PIN, GPIO_PIN_RESET);
 }
 void HeaterSet(uint16_t duration_sec)
 {
@@ -161,11 +140,11 @@ void NaturalCoolingSet(uint16_t duration_sec)
 }
 void HeaterOff()
 {
-	setRelay2State(RELAY_STATE_OFF);
+	HAL_GPIO_WritePin(HEATER_CONTROL_PORT, HEATER_CONTROL_PIN, GPIO_PIN_RESET);
 }
 void HeaterOn()
 {
-	setRelay2State(RELAY_STATE_ON);
+	HAL_GPIO_WritePin(HEATER_CONTROL_PORT, HEATER_CONTROL_PIN, GPIO_PIN_SET);
 }
 void FanSet(uint16_t duration_sec)
 {
@@ -174,11 +153,11 @@ void FanSet(uint16_t duration_sec)
 }
 void FanOff()
 {
-	setRelay3State(RELAY_STATE_OFF);
+	HAL_GPIO_WritePin(FAN_CONTROL_PORT, FAN_CONTROL_PIN, GPIO_PIN_RESET);
 }
 void FanOn()
 {
-	setRelay3State(RELAY_STATE_ON);
+	HAL_GPIO_WritePin(FAN_CONTROL_PORT, FAN_CONTROL_PIN, GPIO_PIN_SET);
 }
 void BoardInitialize()
 {
