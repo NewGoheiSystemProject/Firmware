@@ -12,14 +12,25 @@
 #include "LCDDisplayDriver.h"
 #include <string.h>
 
-#define RELAY1_ANODE_PORT (GPIOA)
-#define RELAY2_ANODE_PORT (GPIOA)
-#define RELAY3_ANODE_PORT (GPIOA)
-#define RELAY1_ANODE_PIN (GPIO_PIN_1)
-#define RELAY2_ANODE_PIN (GPIO_PIN_2)
-#define RELAY3_ANODE_PIN (GPIO_PIN_3)
-#define RELAY_STATE_ON GPIO_PIN_SET
-#define RELAY_STATE_OFF GPIO_PIN_RESET
+/***********************型定義**********************************/
+typedef enum{
+	TRUE,
+	FALSE
+}bool;
+typedef enum{
+	MEASURING_MODE,
+	SETTING_MODE
+}mode;
+
+/************************Pinの定義******************************/
+#define UV_CONTROL_PORT (GPIOA)
+#define UV_CONTROL_PIN (GPIO_PIN_1)
+
+#define HEATER_CONTROL_PORT (GPIOA)
+#define HEATER_CONTROL_PIN (GPIO_PIN_2)
+
+#define FAN_CONTROL_PORT (GPIOA)
+#define FAN_CONTROL_PIN (GPIO_PIN_3)
 
 #define UVSWITCH_PORT (GPIOC)
 #define UVSWITCH_PIN (GPIO_PIN_2)
@@ -33,78 +44,45 @@
 #define SETTING_TEMP_DOWN_PORT (GPIOD)
 #define SETTING_TEMP_DOWN_PIN (GPIO_PIN_1)
 
-typedef GPIO_PinState Relay_State_t;
-
-
-static void setRelay1State(Relay_State_t relayState);
-static void toggleRelay1State();
-static void setRelay2State(Relay_State_t relayState);
-static void toggleRelay2State();
-static void setRelay3State(Relay_State_t relayState);
-static void toggleRelay3State();
-
-static void HeaterTimerCallBack();
-#define HEATER_FLAG_OFF 0
-#define HEATER_FLAG_ON 1
-
-static void FanTimerCallBack();
-#define FAN_FLAG_OFF 0
-#define FAN_FLAG_ON 1
-
-static uint16_t HeaterCounter = 0;
-static int HeaterFlag = 0;
-
-static uint16_t FanCounter = 0;
-static int FanFlag = 0;
-
-#define STATE_CONTROLING 1
-#define STATE_NO_CONTROLING 0
-static int isControling();
-
+/*******************定数**************************/
 #define MAX_CONTROL_DURATION 60//最大を60sec制御とする
-
-static double Coef_prop = 0.8;//暫定
-static double Coef_int = 0.1;//暫定
-static double Coef_dif =0.1;//暫定
-
-
-static void pidControl(double newTempData, double diff);
 #define ROOM_TEMP (double)25.0
+#define SET_TEMP_LOWER_LIMIT 22
+#define SET_TEMP_UPPER_LIMIT 30
+
+/*******************static変数************************/
+static uint16_t HeaterCounter = 0;
+static bool HeaterFlag = FALSE;
+static uint16_t FanCounter = 0;
+static bool FanFlag = FALSE;
+static double Coef_prop = 0.8;//暫定
+static double Coef_int = 0.0;//暫定
+static double Coef_dif = 0.0;//暫定
 static double SetTemperature = ROOM_TEMP;
 static double IntegralVal = 0;
+static bool LCDUpdateFlag = TRUE;
+static bool antiChatteringFlag = FALSE;
+static mode currentMode = 0;
 
+static void HeaterTimerCallBack();
+static void FanTimerCallBack();
+static bool isControling();
+static void pidControl(double newTempData, double diff);
 static void tempControlCallBack();
-
 static void indicateTemperature(double temperature);
 static void indicateAction(char* actionName);
-
-#define USB_COMMAND_LENGTH 5
-
-static void usbCommandAction(uint8_t* command);
-
-#define UV_ON 1
-#define UV_OFF 0
-
-#define TEMP_UP 1
-#define TEMP_DOWN 0
-
-static int LCDUpdateFlag = 1;
-
-static int readUVSwitch();
-
-static int readSettingSwitch();
-
+static bool readUVSwitch();
+static bool readSettingSwitch();
 static void buttonTempUpCallBack();
 static void buttonTempDownCallBack();
-
-static int antiChatteringFlag = 0;
 static void antiChatteringCallBack();
+static void lcdControlCallBack();
 
-static int currentMode = 0;
+
 
 void lcdControlCallBack()
 {
-	LCDUpdateFlag = 1;
+	LCDUpdateFlag = TRUE;
 }
 void tempControlCallBack()
 {
@@ -112,12 +90,12 @@ void tempControlCallBack()
 
 	FanTimerCallBack();
 }
-int isControling()
+bool isControling()
 {
-	int result = STATE_NO_CONTROLING;
+	bool result = FALSE;
 
 	if(HeaterCounter > 0 || FanCounter > 0){
-		result = STATE_CONTROLING;
+		result = TRUE;
 	}
 
 	return result;
@@ -127,7 +105,7 @@ void HeaterTimerCallBack()
 	if(HeaterCounter > 0){
 		HeaterCounter--;
 		if(HeaterCounter == 0){
-			HeaterFlag = HEATER_FLAG_OFF;
+			HeaterFlag = FALSE;
 			TIM3Stop();
 		}
 	}
@@ -137,47 +115,23 @@ void FanTimerCallBack()
 	if(FanCounter > 0){
 		FanCounter--;
 		if(FanCounter == 0){
-			FanFlag = FAN_FLAG_OFF;
+			FanFlag = FALSE;
 			TIM3Stop();
 		}
 	}
 }
-void setRelay1State(Relay_State_t relayState)
-{
-	HAL_GPIO_WritePin(RELAY1_ANODE_PORT, RELAY1_ANODE_PIN, relayState);
-}
-void toggleRelay1State()
-{
-	HAL_GPIO_TogglePin(RELAY1_ANODE_PORT, RELAY1_ANODE_PIN);
-}
-void setRelay2State(Relay_State_t relayState)
-{
-	HAL_GPIO_WritePin(RELAY2_ANODE_PORT, RELAY2_ANODE_PIN, relayState);
-}
-void toggleRelay2State()
-{
-	HAL_GPIO_TogglePin(RELAY2_ANODE_PORT, RELAY2_ANODE_PIN);
-}
-void setRelay3State(Relay_State_t relayState)
-{
-	HAL_GPIO_WritePin(RELAY3_ANODE_PORT, RELAY3_ANODE_PIN, relayState);
-}
-void toggleRelay3State()
-{
-	HAL_GPIO_TogglePin(RELAY3_ANODE_PORT, RELAY3_ANODE_PIN);
-}
 void UVOn()
 {
-	setRelay1State(RELAY_STATE_ON);
+	HAL_GPIO_WritePin(UV_CONTROL_PORT, UV_CONTROL_PIN, GPIO_PIN_SET);
 }
 void UVOff()
 {
-	setRelay1State(RELAY_STATE_OFF);
+	HAL_GPIO_WritePin(UV_CONTROL_PORT, UV_CONTROL_PIN, GPIO_PIN_RESET);
 }
 void HeaterSet(uint16_t duration_sec)
 {
 	HeaterCounter = duration_sec;
-	HeaterFlag = HEATER_FLAG_ON;
+	HeaterFlag = TRUE;
 	TIM3Start();
 }
 void NaturalCoolingSet(uint16_t duration_sec)
@@ -187,11 +141,11 @@ void NaturalCoolingSet(uint16_t duration_sec)
 }
 void HeaterOff()
 {
-	setRelay2State(RELAY_STATE_OFF);
+	HAL_GPIO_WritePin(HEATER_CONTROL_PORT, HEATER_CONTROL_PIN, GPIO_PIN_RESET);
 }
 void HeaterOn()
 {
-	setRelay2State(RELAY_STATE_ON);
+	HAL_GPIO_WritePin(HEATER_CONTROL_PORT, HEATER_CONTROL_PIN, GPIO_PIN_SET);
 }
 void FanSet(uint16_t duration_sec)
 {
@@ -200,11 +154,11 @@ void FanSet(uint16_t duration_sec)
 }
 void FanOff()
 {
-	setRelay3State(RELAY_STATE_OFF);
+	HAL_GPIO_WritePin(FAN_CONTROL_PORT, FAN_CONTROL_PIN, GPIO_PIN_RESET);
 }
 void FanOn()
 {
-	setRelay3State(RELAY_STATE_ON);
+	HAL_GPIO_WritePin(FAN_CONTROL_PORT, FAN_CONTROL_PIN, GPIO_PIN_SET);
 }
 void BoardInitialize()
 {
@@ -248,8 +202,8 @@ void pidControl(double newTempData, double diff)
 }
 void BoardTask()
 {
-	if(readSettingSwitch() == 0){
-		currentMode = 0;
+	if(readSettingSwitch() == FALSE){
+		currentMode = MEASURING_MODE;
 
 		//温度測定
 		static double prevTemperature = 0;
@@ -259,7 +213,7 @@ void BoardTask()
 
 
 		//動作判定
-		if(isControling() == STATE_NO_CONTROLING){//制御中でなければ
+		if(isControling() == FALSE){//制御中でなければ
 			pidControl(temperatureData, prevTemperature - temperatureData);
 		}
 
@@ -267,7 +221,7 @@ void BoardTask()
 		prevTemperature = temperatureData;
 
 		//ヒータ制御
-		if(HeaterFlag == HEATER_FLAG_ON){
+		if(HeaterFlag == TRUE){
 			HeaterOn();
 		}
 		else{
@@ -275,7 +229,7 @@ void BoardTask()
 		}
 
 		//Fan制御
-		if(FanFlag == FAN_FLAG_ON){
+		if(FanFlag == TRUE){
 			FanOn();
 		}
 		else{
@@ -283,14 +237,14 @@ void BoardTask()
 		}
 
 		//表示更新
-		if(LCDUpdateFlag == 1){
+		if(LCDUpdateFlag == TRUE){
 			clearChar_LCDDisplayDriver();
 			indicateTemperature(temperatureData);
 			char actionName[256];
-			if(HeaterFlag == HEATER_FLAG_ON){
+			if(HeaterFlag == TRUE){
 				sprintf(actionName, "Heating");
 			}
-			else if(FanFlag == FAN_FLAG_ON){
+			else if(FanFlag == TRUE){
 				sprintf(actionName, "Fan Cooling");
 			}
 			else{
@@ -298,12 +252,12 @@ void BoardTask()
 			}
 			indicateAction(actionName);
 
-			LCDUpdateFlag = 0;
+			LCDUpdateFlag = FALSE;
 			TIM2Start();
 		}
 
 		//UVSwitch
-		if(readUVSwitch() == 1){
+		if(readUVSwitch() == TRUE){
 			UVOn();
 		}
 		else{
@@ -351,78 +305,68 @@ void indicateAction(char* actionName)
 
 	setChar_LCDDisplayDriver(bytesToIndicate, strlen(actionName), 2);
 }
-void USBTask()
+bool readUVSwitch()
 {
-
-}
-void usbCommandAction(uint8_t* command)
-{
-
-}
-
-int readUVSwitch()
-{
-	int result = 0;
+	bool result = FALSE;
 
 	if(HAL_GPIO_ReadPin(UVSWITCH_PORT, UVSWITCH_PIN) == GPIO_PIN_SET){
-		result = 1;
+		result = TRUE;
 	}
 
 	return result;
 }
 void SettingTask()
 {
-	if(readSettingSwitch() == 1){
-		currentMode = 1;
+	if(readSettingSwitch() == TRUE){
+		currentMode = SETTING_MODE;
 		//表示更新
-		if(LCDUpdateFlag == 1){
+		if(LCDUpdateFlag == TRUE){
 			clearChar_LCDDisplayDriver();
 			indicateTemperature(SetTemperature);
 
-			LCDUpdateFlag = 0;
+			LCDUpdateFlag = FALSE;
 			TIM2Start();
 		}
 	}
 
 }
-int readSettingSwitch()
+bool readSettingSwitch()
 {
-	int result = 0;
+	bool result = FALSE;
 
 	if(HAL_GPIO_ReadPin(SETTINGSWITCH_PORT, SETTINGSWITCH_PIN) == GPIO_PIN_SET){
-		result = 1;
+		result = TRUE;
 	}
 
 	return result;
 }
 void buttonTempUpCallBack()
 {
-	if(currentMode == 1){
-		if(antiChatteringFlag == 0){
-			if(SetTemperature <= 30){
+	if(currentMode == SETTING_MODE){
+		if(antiChatteringFlag == FALSE){
+			if(SetTemperature <= SET_TEMP_UPPER_LIMIT){
 				SetTemperature++;
 			}
-			antiChatteringFlag = 1;
+			antiChatteringFlag = TRUE;
 			TIM4Start();
 		}
 	}
-
 }
 void buttonTempDownCallBack()
 {
-	if(currentMode == 1)
+	if(currentMode == SETTING_MODE)
 	{
-		if(antiChatteringFlag == 0){
-			if(SetTemperature >= 22){
+		if(antiChatteringFlag == FALSE){
+			if(SetTemperature >= SET_TEMP_LOWER_LIMIT){
 				SetTemperature--;
 			}
-			antiChatteringFlag = 1;
+			antiChatteringFlag = TRUE;
 			TIM4Start();
 		}
 	}
 }
 void antiChatteringCallBack()
 {
-	antiChatteringFlag = 0;
+	antiChatteringFlag = FALSE;
 	TIM4Stop();
 }

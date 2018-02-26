@@ -13,7 +13,6 @@ void boardControlTaskTest()
 	BoardInitialize();
 
 	while(1){
-		USBTask();
 		BoardTask();
 		SettingTask();
 	}
