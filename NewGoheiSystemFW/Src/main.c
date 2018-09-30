@@ -50,8 +50,10 @@
 #include "main.h"
 #include "stm32f4xx_hal.h"
 #include "adc.h"
+#include "dma.h"
 #include "i2c.h"
 #include "tim.h"
+#include "usart.h"
 #include "usb_device.h"
 #include "gpio.h"
 
@@ -106,14 +108,27 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_I2C1_Init();
   MX_ADC1_Init();
   MX_TIM3_Init();
   MX_USB_DEVICE_Init();
   MX_TIM2_Init();
   MX_TIM4_Init();
+  MX_USART3_UART_Init();
 
   /* USER CODE BEGIN 2 */
+  uint8_t uartRxBuf[1000] = {0};
+  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_RESET);
+  HAL_UART_Receive_DMA(&huart3, uartRxBuf, 1000);
+
+  HAL_Delay(500);
+  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
+
+  while(1){
+	  ;
+  }
+
   //LCDDriverTest();
   boardControlTaskTest();
   USB_CDC_Test();

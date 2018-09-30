@@ -159,17 +159,17 @@
                     					
                     <sourceEntries>
                         						
-                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
-                        						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Inc"/>
+                        						
+                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Test"/>
                         						
-                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="UserModules"/>
+                        <entry excluding="AQMDriver" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="UserModules"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="startup"/>
                         					
@@ -324,6 +324,14 @@
                                 <inputType id="fr.ac6.managedbuild.tool.gnu.cross.assembler.input.356185278" superClass="fr.ac6.managedbuild.tool.gnu.cross.assembler.input"/>
                                 							
                             </tool>
+                            							
+                            <tool id="fr.ac6.managedbuild.tool.gnu.cross.assembler.exe.release.703389876" name="MCU GCC Assembler" superClass="fr.ac6.managedbuild.tool.gnu.cross.assembler.exe.release">
+                                								
+                                <inputType id="cdt.managedbuild.tool.gnu.assembler.input.644779306" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+                                								
+                                <inputType id="fr.ac6.managedbuild.tool.gnu.cross.assembler.input.654244849" superClass="fr.ac6.managedbuild.tool.gnu.cross.assembler.input"/>
+                                							
+                            </tool>
                             						
                         </toolChain>
                         					
@@ -331,17 +339,17 @@
                     					
                     <sourceEntries>
                         						
-                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
-                        						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Inc"/>
+                        						
+                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Test"/>
                         						
-                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="UserModules"/>
+                        <entry excluding="AQMDriver" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="UserModules"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="startup"/>
                         					
