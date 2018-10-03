@@ -67,6 +67,7 @@ RING_BUFFER_STATE_t GetData(RingBufferHandle_t handle, uint32_t* buffer)
 		int index = bufferPointers[handle]->Front;
 		*buffer = bufferPointers[handle]->buffer[index];
 		bufferPointers[handle]->Front = (++index) % bufferPointers[handle]->Size;
+		bufferPointers[handle]->Count--;
 	}
 
 	return result;
