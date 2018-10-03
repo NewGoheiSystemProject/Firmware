@@ -35,6 +35,7 @@ RingBufferHandle_t CreateRingBuffer(uint32_t size)
 
 	if(minimumUnused != BUFFER_FULL_STATE){
 		bufferPointers[minimumUnused] = (RingBuffer_t*)malloc(sizeof(RingBuffer_t));
+		bufferPointers[minimumUnused]->buffer = (uint32_t*)malloc(size * sizeof(uint32_t));
 		isUsed[minimumUnused] = TRUE;
 	}
 
@@ -43,13 +44,32 @@ RingBufferHandle_t CreateRingBuffer(uint32_t size)
 void DisposeRingBuffer(RingBufferHandle_t handle)
 {
 	if(isUsed[handle] == TRUE){
+		free(bufferPointers[handle]->buffer);
 		free(bufferPointers[handle]);
 		isUsed[handle] = FALSE;
 	}
 }
 RING_BUFFER_STATE_t GetData(RingBufferHandle_t handle, uint32_t* buffer)
 {
+	RING_BUFFER_STATE_t result = RING_BUFFER_SUCCESS;
 
+	if(isUsed[handle] == FALSE){
+		result = RING_BUFFER_ERROR;
+	}
+
+	if(result == RING_BUFFER_SUCCESS){
+		if(bufferPointers[handle]->Count <= 0){
+			result = RING_BUFFER_ERROR;
+		}
+	}
+
+	if(result == RING_BUFFER_SUCCESS){
+		int index = bufferPointers[handle]->Front;
+		*buffer = bufferPointers[handle]->buffer[index];
+		bufferPointers[handle]->Front = (++index) % bufferPointers[handle]->Size;
+	}
+
+	return result;
 }
 RING_BUFFER_STATE_t AddData(RingBufferHandle_t handle, uint32_t data)
 {
