@@ -74,7 +74,28 @@ RING_BUFFER_STATE_t GetData(RingBufferHandle_t handle, uint32_t* buffer)
 }
 RING_BUFFER_STATE_t AddData(RingBufferHandle_t handle, uint32_t data)
 {
+	RING_BUFFER_STATE_t result = RING_BUFFER_SUCCESS;
 
+	if(isUsed[handle] == FALSE){
+		result = RING_BUFFER_ERROR;
+	}
+
+	if(result == RING_BUFFER_SUCCESS){
+		int index = bufferPointers[handle]->Front;
+
+		if(bufferPointers[handle]->Count > 0){
+			index = ++index % bufferPointers[handle]->Size;
+		}
+
+		bufferPointers[handle]->buffer[index] = data;
+
+		if(bufferPointers[handle]->Count < bufferPointers[handle]->Size){
+			bufferPointers[handle]->Count++;
+		}
+
+	}
+
+	return result;
 }
 uint32_t GetCount(RingBufferHandle_t handle)
 {
