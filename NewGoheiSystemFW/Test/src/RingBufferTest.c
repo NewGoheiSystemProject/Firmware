@@ -43,27 +43,27 @@ void RingBufferReadWriteTest()
 	uint32_t readoutResult = 0;
 
 	if(result == RING_BUFFER_SUCCESS){
-		readoutResult = GetData(bufferHandle, &readoutResult);
+		result = GetData(bufferHandle, &readoutResult);
 		count = GetCount(bufferHandle);
 	}
 
 	if(result == RING_BUFFER_SUCCESS){
-		readoutResult = GetData(bufferHandle, &readoutResult);
+		result = GetData(bufferHandle, &readoutResult);
 		count = GetCount(bufferHandle);
 	}
 
 	if(result == RING_BUFFER_SUCCESS){
-		readoutResult = GetData(bufferHandle, &readoutResult);
+		result = GetData(bufferHandle, &readoutResult);
 		count = GetCount(bufferHandle);
 	}
 
 	if(result == RING_BUFFER_SUCCESS){
-		readoutResult = GetData(bufferHandle, &readoutResult);
+		result = GetData(bufferHandle, &readoutResult);
 		count = GetCount(bufferHandle);
 	}
 
 	if(result == RING_BUFFER_SUCCESS){
-		readoutResult = GetData(bufferHandle, &readoutResult);
+		result = GetData(bufferHandle, &readoutResult);
 		count = GetCount(bufferHandle);
 	}
 

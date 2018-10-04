@@ -116,7 +116,7 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   //LCDDriverTest();
-  RingBufferReadWriteTest();
+//  RingBufferReadWriteTest();
   boardControlTaskTest();
 //  USB_CDC_Test();
   /* USER CODE END 2 */

@@ -6,7 +6,7 @@
  */
 
 #include "RingBuffer.h"
-
+#include <stdlib.h>
 
 #define BUFFER_CREATE_COUNT 100
 #define BUFFER_FULL_STATE (int)-1
@@ -28,14 +28,21 @@ static bool_t isUsed[BUFFER_CREATE_COUNT] = { FALSE };
 static RingBuffer_t* bufferPointers[BUFFER_CREATE_COUNT];
 
 static int findMinimumHandle();
+static void moduleInitialize();
 
 RingBufferHandle_t CreateRingBuffer(uint32_t size)
 {
+	moduleInitialize();
+
 	int minimumUnused = findMinimumHandle();
 
 	if(minimumUnused != BUFFER_FULL_STATE){
 		bufferPointers[minimumUnused] = (RingBuffer_t*)malloc(sizeof(RingBuffer_t));
 		bufferPointers[minimumUnused]->buffer = (uint32_t*)malloc(size * sizeof(uint32_t));
+		bufferPointers[minimumUnused]->Size = size;
+	    bufferPointers[minimumUnused]->Front = 0;
+	    bufferPointers[minimumUnused]->Back = 0;
+	    bufferPointers[minimumUnused]->Count = 0;
 		isUsed[minimumUnused] = TRUE;
 	}
 
@@ -126,4 +133,15 @@ static int findMinimumHandle()
 	}
 
 	return result;
+}
+void moduleInitialize()
+{
+	static bool_t isInitialized = FALSE;
+
+	if(isInitialized == FALSE){
+		int cnt = 0;
+		for(cnt = 0; cnt < BUFFER_CREATE_COUNT; cnt++){
+			isUsed[cnt] = FALSE;
+		}
+	}
 }
