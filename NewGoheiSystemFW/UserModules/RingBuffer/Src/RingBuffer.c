@@ -107,7 +107,10 @@ uint32_t GetCount(RingBufferHandle_t handle)
 }
 void ClearBuffer(RingBufferHandle_t handle)
 {
-
+	if(isUsed[handle] == TRUE){
+		bufferPointers[handle]->Count = 0;
+		bufferPointers[handle]->Front = bufferPointers[handle]->Back;
+	}
 }
 static int findMinimumHandle()
 {
