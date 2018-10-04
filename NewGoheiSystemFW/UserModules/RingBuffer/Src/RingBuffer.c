@@ -58,7 +58,7 @@ RING_BUFFER_STATE_t GetData(RingBufferHandle_t handle, uint32_t* buffer)
 	}
 
 	if(result == RING_BUFFER_SUCCESS){
-		if(bufferPointers[handle]->Count <= 0){
+		if(bufferPointers[handle]->Count == 0){
 			result = RING_BUFFER_ERROR;
 		}
 	}
@@ -81,13 +81,11 @@ RING_BUFFER_STATE_t AddData(RingBufferHandle_t handle, uint32_t data)
 	}
 
 	if(result == RING_BUFFER_SUCCESS){
-		int index = bufferPointers[handle]->Front;
-
-		if(bufferPointers[handle]->Count > 0){
-			index = ++index % bufferPointers[handle]->Size;
-		}
+		int index = bufferPointers[handle]->Back;
 
 		bufferPointers[handle]->buffer[index] = data;
+
+		bufferPointers[handle]->Back = ++index % bufferPointers[handle]->Size;
 
 		if(bufferPointers[handle]->Count < bufferPointers[handle]->Size){
 			bufferPointers[handle]->Count++;
@@ -99,7 +97,13 @@ RING_BUFFER_STATE_t AddData(RingBufferHandle_t handle, uint32_t data)
 }
 uint32_t GetCount(RingBufferHandle_t handle)
 {
+	uint32_t result = 0;
 
+	if(isUsed[handle] == TRUE){
+		result = bufferPointers[handle]->Count;
+	}
+
+	return result;
 }
 void ClearBuffer(RingBufferHandle_t handle)
 {
