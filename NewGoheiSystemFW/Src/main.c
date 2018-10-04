@@ -60,6 +60,7 @@
 #include "boardControlTest.h"
 #include "LCDDriverTest.h"
 #include "USB_CDC_Test.h"
+#include "RingBufferTest.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -115,8 +116,9 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   //LCDDriverTest();
+  RingBufferReadWriteTest();
   boardControlTaskTest();
-  USB_CDC_Test();
+//  USB_CDC_Test();
   /* USER CODE END 2 */
 
   /* Infinite loop */
