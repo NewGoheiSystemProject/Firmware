@@ -24,8 +24,12 @@ static uint8_t stringReadPos = 0;
 static uint8_t stringWritePos = 0;
 static uint8_t stringRingCount = 0;
 
+static int rcvCnt = 0;
+
+static void callBack(DMA_HandleTypeDef* phandle);
 static void stringBufferingTask();
 static int searchString(uint8_t* stringToSearch, uint16_t length);
+static void attachFunctionToDMA(DMA_HandleTypeDef* phandle, void* pfunc);
 
 void WifiModuleBootTest()
 {
@@ -66,5 +70,21 @@ int searchString(uint8_t* stringToSearch, uint16_t length)
 
 	while(stringReadPos < stringWritePos){
 
+	}
+}
+void attachFunctionToDMA(DMA_HandleTypeDef* phandle, void* pfunc)
+{
+
+}
+void callBack(DMA_HandleTypeDef* phandle)
+{
+	if(phandle == &hdma_usart3_rx){
+		rcvCnt++;
+	}
+}
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
+{
+	if(huart == &huart3){
+		rcvCnt++;
 	}
 }
