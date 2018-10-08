@@ -40,7 +40,7 @@ static uint8_t stringRingCount = 0;
 static int rcvCnt = 0;
 
 static void stringBufferingTask();
-
+static void eventCheckTask();
 static void checkEventState(uint8_t* checkStr, uint16_t length);
 static void clearEvent();
 
@@ -51,15 +51,36 @@ void WifiModuleBootTest()
 	HAL_Delay(RESET_PULSE_WIDTH_MS);
 	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
 
-	while(1){
+	//ready待ち
+	while(eventStatus & EVENT_RCV_READY){
+		//uartrecv
 		stringBufferingTask();
-		if(stringRingCount > 0){
-			checkEventState(receivedStrings[stringReadPos], stringLength[stringReadPos]);
-			stringReadPos = (stringReadPos + 1) % MESSAGE_BUFFER_SINZE;
-			stringRingCount--;
-			clearEvent();
-		}
+
+		//event check
+		eventCheckTask();
 	}
+
+	//wifi connect待ち
+	while(eventStatus & EVENT_RCV_READY){
+		//uartrecv
+		stringBufferingTask();
+
+		//event check
+		eventCheckTask();
+	}
+
+	//wifi connect待ち
+	while(eventStatus & EVENT_RCV_WIFI_GOT_IP){
+		//uartrecv
+		stringBufferingTask();
+
+		//event check
+		eventCheckTask();
+	}
+
+	clearEvent();
+
+	while(1);
 }
 void stringBufferingTask()
 {
@@ -122,4 +143,12 @@ void checkEventState(uint8_t* checkStr, uint16_t length)
 void clearEvent()
 {
 	eventStatus = 0;
+}
+void eventCheckTask()
+{
+	if(stringRingCount > 0){
+		checkEventState(receivedStrings[stringReadPos], stringLength[stringReadPos]);
+		stringReadPos = (stringReadPos + 1) % MESSAGE_BUFFER_SINZE;
+		stringRingCount--;
+	}
 }
