@@ -52,7 +52,7 @@ void WifiModuleBootTest()
 	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
 
 	//ready待ち
-	while(eventStatus & EVENT_RCV_READY){
+	while(!(eventStatus & EVENT_RCV_READY)){
 		//uartrecv
 		stringBufferingTask();
 
@@ -61,7 +61,7 @@ void WifiModuleBootTest()
 	}
 
 	//wifi connect待ち
-	while(eventStatus & EVENT_RCV_READY){
+	while(!(eventStatus & EVENT_RCV_WIFI_CONNECTED)){
 		//uartrecv
 		stringBufferingTask();
 
@@ -70,7 +70,7 @@ void WifiModuleBootTest()
 	}
 
 	//wifi connect待ち
-	while(eventStatus & EVENT_RCV_WIFI_GOT_IP){
+	while(!(eventStatus & EVENT_RCV_WIFI_GOT_IP)){
 		//uartrecv
 		stringBufferingTask();
 
@@ -86,8 +86,11 @@ void stringBufferingTask()
 {
 	if(__HAL_DMA_GET_COUNTER(&hdma_usart3_rx) < DMA_BUFFER_SIZE){
 		writePos = DMA_BUFFER_SIZE - 1 - __HAL_DMA_GET_COUNTER(&hdma_usart3_rx);
-		int cnt = 0;
+		static int cnt = 0;
 		while(readPos < writePos){
+			if(stringRingCount >= MESSAGE_BUFFER_SINZE){
+				stringWritePos = 0;
+			}
 			if(uartRxBuf[readPos] != '\r' && uartRxBuf[readPos] != '\n'){
 				receivedStrings[stringWritePos][cnt] = uartRxBuf[readPos];
 				cnt++;
@@ -96,9 +99,6 @@ void stringBufferingTask()
 			else if(uartRxBuf[readPos] == '\r' && uartRxBuf[readPos + 1] == '\n'){
 				stringWritePos = (stringWritePos + 1) % MESSAGE_BUFFER_SINZE;
 				stringRingCount++;
-				cnt = 0;
-			}
-			else{
 				cnt = 0;
 			}
 			readPos++;
