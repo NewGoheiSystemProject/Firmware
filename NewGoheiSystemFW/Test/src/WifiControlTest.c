@@ -17,6 +17,10 @@
 #define EVENT_RCV_WIFI_GOT_IP    0x0004
 #define EVENT_OK                 0x0008
 
+#define EVENT_TIMEOUT            0x8000
+
+
+
 static uint16_t eventStatus = 0;
 const uint8_t STR_READY[] = "ready";
 const uint8_t STR_WIFI_CONNECTED[] = "WIFI CONNECTED";
@@ -43,6 +47,7 @@ static void stringBufferingTask();
 static void eventCheckTask();
 static void checkEventState(uint8_t* checkStr, uint16_t length);
 static void clearEvent();
+static void wait4Event(uint16_t eventFlag, uint32_t timeout);
 
 void WifiModuleBootTest()
 {
@@ -52,30 +57,19 @@ void WifiModuleBootTest()
 	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
 
 	//ready待ち
-	while(!(eventStatus & EVENT_RCV_READY)){
-		//uartrecv
-		stringBufferingTask();
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		wait4Event(EVENT_RCV_READY, 5000);
+	}
 
-		//event check
-		eventCheckTask();
+
+	//wifi connect待ち
+	if(!(eventStatus & EVENT_RCV_WIFI_CONNECTED)){
+		wait4Event(EVENT_RCV_READY, 5000);
 	}
 
 	//wifi connect待ち
-	while(!(eventStatus & EVENT_RCV_WIFI_CONNECTED)){
-		//uartrecv
-		stringBufferingTask();
-
-		//event check
-		eventCheckTask();
-	}
-
-	//wifi connect待ち
-	while(!(eventStatus & EVENT_RCV_WIFI_GOT_IP)){
-		//uartrecv
-		stringBufferingTask();
-
-		//event check
-		eventCheckTask();
+	if(!(eventStatus & EVENT_RCV_WIFI_GOT_IP)){
+		wait4Event(EVENT_RCV_READY, 5000);
 	}
 
 	clearEvent();
@@ -150,5 +144,23 @@ void eventCheckTask()
 		checkEventState(receivedStrings[stringReadPos], stringLength[stringReadPos]);
 		stringReadPos = (stringReadPos + 1) % MESSAGE_BUFFER_SINZE;
 		stringRingCount--;
+	}
+}
+void wait4Event(uint16_t eventFlag, uint32_t timeout)
+{
+	uint32_t currentTick = HAL_GetTick();
+
+	while(!(eventStatus & eventFlag)){
+		//uartrecv
+		stringBufferingTask();
+
+		//event check
+		eventCheckTask();
+
+		//check Tick
+		if(HAL_GetTick() > currentTick + timeout){
+			eventStatus |= EVENT_TIMEOUT;
+			break;
+		}
 	}
 }
