@@ -27,12 +27,11 @@ const uint8_t STR_WIFI_CONNECTED[] = "WIFI CONNECTED";
 const uint8_t STR_WIFI_GOT_IP[] = "WIFI GOT IP";
 const uint8_t STR_OK[] = "OK";
 
-
-
 //UartRingBuffer
 static uint8_t uartRxBuf[DMA_BUFFER_SIZE] = {0};
 static uint16_t readPos = 0;
 static uint16_t writePos = 0;
+static uint16_t uartCount = 0;
 
 //StringRingBuffer
 static uint8_t receivedStrings[MESSAGE_BUFFER_SINZE][DMA_BUFFER_SIZE] = {0};
@@ -61,7 +60,6 @@ void WifiModuleBootTest()
 		wait4Event(EVENT_RCV_READY, 5000);
 	}
 
-
 	//wifi connect待ち
 	if(!(eventStatus & EVENT_RCV_WIFI_CONNECTED)){
 		wait4Event(EVENT_RCV_READY, 5000);
@@ -80,8 +78,16 @@ void stringBufferingTask()
 {
 	if(__HAL_DMA_GET_COUNTER(&hdma_usart3_rx) < DMA_BUFFER_SIZE){
 		writePos = DMA_BUFFER_SIZE - 1 - __HAL_DMA_GET_COUNTER(&hdma_usart3_rx);
+		if(readPos < writePos){
+			uartCount = writePos - readPos;
+			rcvCnt = 0;
+		}
+		else if(rcvCnt > 0){
+			uartCount = DMA_BUFFER_SIZE - readPos + writePos - 1;
+		}
+
 		static int cnt = 0;
-		while(readPos < writePos){
+		while(uartCount > 0){
 			if(stringRingCount >= MESSAGE_BUFFER_SINZE){
 				stringWritePos = 0;
 			}
@@ -95,7 +101,8 @@ void stringBufferingTask()
 				stringRingCount++;
 				cnt = 0;
 			}
-			readPos++;
+			readPos = (readPos + 1) % DMA_BUFFER_SIZE;
+			uartCount --;
 		}
 	}
 }
