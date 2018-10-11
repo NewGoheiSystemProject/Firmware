@@ -50,8 +50,10 @@
 #include "main.h"
 #include "stm32f4xx_hal.h"
 #include "adc.h"
+#include "dma.h"
 #include "i2c.h"
 #include "tim.h"
+#include "usart.h"
 #include "usb_device.h"
 #include "gpio.h"
 
@@ -60,13 +62,13 @@
 #include "boardControlTest.h"
 #include "LCDDriverTest.h"
 #include "USB_CDC_Test.h"
+#include "WifiControlTest.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -106,14 +108,18 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_I2C1_Init();
   MX_ADC1_Init();
   MX_TIM3_Init();
   MX_USB_DEVICE_Init();
   MX_TIM2_Init();
   MX_TIM4_Init();
+  MX_USART3_UART_Init();
 
   /* USER CODE BEGIN 2 */
+  WifiModuleBootTest();
+
   //LCDDriverTest();
   boardControlTaskTest();
   USB_CDC_Test();

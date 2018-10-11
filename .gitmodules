@@ -1,0 +1,3 @@
+[submodule "NewGoheiSystemFW/UserModules/AQMDriver"]
+	path = NewGoheiSystemFW/UserModules/AQMDriver
+	url = https://github.com/ShujiMikami/AQM1602XA_RN_GBW_Driver.git
