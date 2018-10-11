@@ -27,6 +27,12 @@ const uint8_t STR_WIFI_CONNECTED[] = "WIFI CONNECTED";
 const uint8_t STR_WIFI_GOT_IP[] = "WIFI GOT IP";
 const uint8_t STR_OK[] = "OK";
 
+const uint8_t STR_CONNECTION_START_FRONT[] = "AT+CIPSTART=\"UDP\",\"";
+const uint8_t STR_NTPSERVER_NAME[] = "ntp.nict.jp";
+const uint8_t STR_CONNECTION_START_REAR[] = "\",123,,0";
+
+
+
 //UartRingBuffer
 static uint8_t uartRxBuf[DMA_BUFFER_SIZE] = {0};
 static uint16_t readPos = 0;
