@@ -18,6 +18,7 @@
 #define EVENT_OK                 0x0008
 #define EVENT_CONNECTED          0x0010
 #define EVENT_RECEIVE_MESSAGE    0x0020
+#define EVENT_SEND_OK            0x0040
 
 #define EVENT_TIMEOUT            0x8000
 
@@ -29,7 +30,8 @@ const uint8_t STR_WIFI_CONNECTED[] = "WIFI CONNECTED";
 const uint8_t STR_WIFI_GOT_IP[] = "WIFI GOT IP";
 const uint8_t STR_OK[] = "OK";
 const uint8_t STR_CONNECTED[] = ",CONNECT";
-const uint8_t STR_RECEIVE_FROM_SERVER = "+IPD";
+const uint8_t STR_SEND_OK[] = "SEND OK";
+const uint8_t STR_RECEIVE_FROM_SERVER = "+IPD,";
 
 const uint8_t STR_CONNECTION_START_FRONT[] = "AT+CIPSTART=\"UDP\",\"";
 const uint8_t STR_NTPSERVER_NAME[] = "ntp.nict.jp";
@@ -126,6 +128,11 @@ void WifiNTPTest()
 	if(!(eventStatus & EVENT_TIMEOUT)){
 		//nictへの接続成功待ち
 		wait4Event(EVENT_CONNECTED, 5000);
+	}
+
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		//OK待ち
+		wait4Event(EVENT_OK, 5000);
 	}
 
 	if(!(eventStatus & EVENT_TIMEOUT)){
@@ -226,6 +233,11 @@ void checkEventState(uint8_t* checkStr, uint16_t length)
 		//文字列取得
 	}
 
+	if(length == sizeof(STR_SEND_OK) - 1){
+		if(memcmp(checkStr, STR_SEND_OK, length) == 0){
+			eventStatus |= EVENT_SEND_OK;
+		}
+	}
 
 }
 
