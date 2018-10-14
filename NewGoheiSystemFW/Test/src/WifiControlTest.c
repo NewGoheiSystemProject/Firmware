@@ -64,6 +64,8 @@ static int connectionHandleAsClient = 0;
 
 static int receivedDataCnt = 0;
 
+static uint8_t receivedData[200];
+
 static void stringBufferingTask();
 static void eventCheckTask();
 static void checkEventState(uint8_t* checkStr, uint16_t length);
@@ -246,6 +248,7 @@ void checkEventState(uint8_t* checkStr, uint16_t length)
 		receivedDataCnt = atoi((const char*)countChar);
 
 		//文字列取得
+		receivedData = (uint8_t*)colonPos;
 	}
 
 	if(length == sizeof(STR_SEND_OK) - 1){
