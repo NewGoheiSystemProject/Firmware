@@ -62,6 +62,8 @@ static int rcvCnt = 0;
 
 static int connectionHandleAsClient = 0;
 
+static int receivedDataCnt = 0;
+
 static void stringBufferingTask();
 static void eventCheckTask();
 static void checkEventState(uint8_t* checkStr, uint16_t length);
@@ -230,6 +232,19 @@ void checkEventState(uint8_t* checkStr, uint16_t length)
 	if(strstr((const char*)checkStr, (const char*)STR_RECEIVE_FROM_SERVER) != NULL){
 		eventStatus |= EVENT_RECEIVE_MESSAGE;
 		//文字数取得
+		char* commaPos = strtok((char*)checkStr, ",");
+		char* colonPos = strtok((char*)commaPos, ":");
+
+		char countChar[10];
+		int countLength = (int)(colonPos - commaPos);
+
+		int cnt = 0;
+		for(cnt = 0; cnt < countLength; cnt++){
+			countChar[cnt] = commaPos[cnt];
+		}
+		countChar[cnt] = '\0';
+		receivedDataCnt = atoi((const char*)countChar);
+
 		//文字列取得
 	}
 
