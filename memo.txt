@@ -1,3 +1,6 @@
 2018/10/6
   STM32HALのUARTDMAについて, UARTのGlobalInterruptをONにすると, DMAが機能しない. これをONにしなくても, UARTRxCpltCallBackは走る構造になっている. 
   DMAをcircularモードにセットした場合, バッファの最後まで到達したことを検知するには, UartRxCpltCallbackを使用する
+
+2018/10/15
+  ntp.nict.jpでは, 48バイトのうち, 40バイトからの4バイト分が秒データ
