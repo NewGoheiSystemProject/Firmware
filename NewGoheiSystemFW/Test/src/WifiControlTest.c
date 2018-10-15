@@ -166,10 +166,10 @@ void WifiNTPTest()
 
 	if(!(eventStatus & EVENT_TIMEOUT)){
 		//40バイト目からの4バイトが時間
-		int gotTime = (int)receivedData[40] |
-				      (int)receivedData[41] << 8 |
-					  (int)receivedData[42] << 16 |
-					  (int)receivedData[43] << 24;
+		int gotTime = (int)receivedData[43] |
+				      (int)receivedData[42] << 8 |
+					  (int)receivedData[41] << 16 |
+					  (int)receivedData[40] << 24;
 
 		printf("%d", gotTime);
 	}
@@ -249,6 +249,7 @@ void checkEventState(uint8_t* checkStr, uint16_t length)
 
 		if(strOfHandle != NULL){//数値に変換
 			connectionHandleAsClient = atoi((const char*)strOfHandle);
+
 		}
 	}
 
