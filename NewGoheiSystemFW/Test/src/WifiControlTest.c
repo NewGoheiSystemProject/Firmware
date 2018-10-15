@@ -31,7 +31,7 @@ const uint8_t STR_WIFI_GOT_IP[] = "WIFI GOT IP";
 const uint8_t STR_OK[] = "OK";
 const uint8_t STR_CONNECTED[] = ",CONNECT";
 const uint8_t STR_SEND_OK[] = "SEND OK";
-const uint8_t STR_RECEIVE_FROM_SERVER = "+IPD,";
+const uint8_t STR_RECEIVE_FROM_SERVER[] = "+IPD,";
 
 const uint8_t STR_CONNECTION_START_FRONT[] = "AT+CIPSTART=\"UDP\",\"";
 const uint8_t STR_NTPSERVER_NAME[] = "ntp.nict.jp";
@@ -154,7 +154,28 @@ void WifiNTPTest()
 		sendMessage(STR_ACTUAL_COMMAND_NICT, sizeof(STR_ACTUAL_COMMAND_NICT));
 	}
 
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		//送信完了待ち
+		wait4Event(EVENT_SEND_OK, 5000);
+	}
+
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		//受信待ち
+		wait4Event(EVENT_RECEIVE_MESSAGE, 5000);
+	}
+
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		//40バイト目からの4バイトが時間
+		int gotTime = (int)receivedData[40] |
+				      (int)receivedData[41] << 8 |
+					  (int)receivedData[42] << 16 |
+					  (int)receivedData[43] << 24;
+
+		printf("%d", gotTime);
+	}
 	clearEvent();
+
+
 }
 void stringBufferingTask()
 {
@@ -248,7 +269,9 @@ void checkEventState(uint8_t* checkStr, uint16_t length)
 		receivedDataCnt = atoi((const char*)countChar);
 
 		//文字列取得
-		receivedData = (uint8_t*)colonPos;
+		for(cnt = 0; cnt < strlen(colonPos); cnt++){
+			receivedData[cnt] = colonPos[cnt];
+		}
 	}
 
 	if(length == sizeof(STR_SEND_OK) - 1){
@@ -294,7 +317,7 @@ void sendMessage(uint8_t* message, uint16_t length)
 	HAL_StatusTypeDef result = HAL_UART_Transmit(&huart3, message, length, 1000);
 
 	if(result == HAL_OK){
-		result = HAL_UART_Transmit(&huart3, STR_NEWLINE, sizeof(STR_NEWLINE) - 1, 1000);
+		result = HAL_UART_Transmit(&huart3, (uint8_t*)STR_NEWLINE, sizeof(STR_NEWLINE) - 1, 1000);
 	}
 
 	if(result != HAL_OK){
