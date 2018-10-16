@@ -127,6 +127,9 @@ void WifiNTPTest()
 	if(!(eventStatus & EVENT_TIMEOUT)){
 		//nict.jpのNTPに接続
 		sendMessage((uint8_t*)STR_CONNECTION_START_NICT, sizeof(STR_CONNECTION_START_NICT) - 1);
+		if(!(eventStatus & EVENT_TIMEOUT)){
+			sendMessage((uint8_t*)STR_NEWLINE, sizeof(STR_NEWLINE) - 1);
+		}
 	}
 
 	if(!(eventStatus & EVENT_TIMEOUT)){
@@ -141,7 +144,10 @@ void WifiNTPTest()
 
 	if(!(eventStatus & EVENT_TIMEOUT)){
 		//nictへのコマンド送信準備
-		sendMessage(STR_SENDCOMMAND_NICT, sizeof(STR_SENDCOMMAND_NICT) - 1);
+		sendMessage((uint8_t*)STR_SENDCOMMAND_NICT, sizeof(STR_SENDCOMMAND_NICT) - 1);
+		if(!(eventStatus & EVENT_TIMEOUT)){
+			sendMessage((uint8_t*)STR_NEWLINE, sizeof(STR_NEWLINE) - 1);
+		}
 	}
 
 	if(!(eventStatus & EVENT_TIMEOUT)){
@@ -312,14 +318,14 @@ void wait4Event(uint16_t eventFlag, uint32_t timeout)
 			break;
 		}
 	}
+
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		eventStatus &= (~eventFlag);
+	}
 }
 void sendMessage(uint8_t* message, uint16_t length)
 {
 	HAL_StatusTypeDef result = HAL_UART_Transmit(&huart3, message, length, 1000);
-
-	if(result == HAL_OK){
-		result = HAL_UART_Transmit(&huart3, (uint8_t*)STR_NEWLINE, sizeof(STR_NEWLINE) - 1, 1000);
-	}
 
 	if(result != HAL_OK){
 		eventStatus |= EVENT_TIMEOUT;
