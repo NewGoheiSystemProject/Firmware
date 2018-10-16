@@ -144,10 +144,10 @@ void WifiNTPTest()
 		sendMessage(STR_SENDCOMMAND_NICT, sizeof(STR_SENDCOMMAND_NICT) - 1);
 	}
 
-//	if(!(eventStatus & EVENT_TIMEOUT)){
-//		//OK待ち
-//		wait4Event(EVENT_OK, 5000);
-//	}
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		//OK待ち
+		wait4Event(EVENT_OK, 5000);
+	}
 
 	if(!(eventStatus & EVENT_TIMEOUT)){
 		//nictへのコマンド送信
