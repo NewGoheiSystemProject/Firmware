@@ -157,7 +157,7 @@ void WifiNTPTest()
 
 	if(!(eventStatus & EVENT_TIMEOUT)){
 		//nictへのコマンド送信
-		sendMessage(STR_ACTUAL_COMMAND_NICT, sizeof(STR_ACTUAL_COMMAND_NICT));
+		sendMessage((uint8_t*)STR_ACTUAL_COMMAND_NICT, sizeof(STR_ACTUAL_COMMAND_NICT));
 	}
 
 	if(!(eventStatus & EVENT_TIMEOUT)){
