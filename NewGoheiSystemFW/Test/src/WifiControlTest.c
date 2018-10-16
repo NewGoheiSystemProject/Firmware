@@ -203,7 +203,7 @@ void stringBufferingTask()
 			if(uartRxBuf[readPos] != '\r' && uartRxBuf[readPos] != '\n'){
 				receivedStrings[stringWritePos][cnt] = uartRxBuf[readPos];
 				cnt++;
-				stringLength[stringWritePos]++;
+				stringLength[stringWritePos] = cnt;
 			}
 			else if(uartRxBuf[readPos] == '\r' && uartRxBuf[readPos + 1] == '\n'){
 				stringWritePos = (stringWritePos + 1) % MESSAGE_BUFFER_SINZE;
