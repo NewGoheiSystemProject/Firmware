@@ -179,6 +179,10 @@ void WifiNTPTest()
 					  (int)receivedData[41] << 16 |
 					  (int)receivedData[40] << 24;
 
+		//時刻
+		uint32_t gotHour = (gotTime % (24 * 60 * 60)) / (60 * 60);
+		uint32_t gotMin = ((gotTime % (24 * 60 * 60)) % (60 * 60)) / 60;
+
 		printf("%d", gotTime);
 	}
 	clearEvent();
