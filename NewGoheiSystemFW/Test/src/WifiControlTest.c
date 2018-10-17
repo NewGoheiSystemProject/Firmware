@@ -174,7 +174,7 @@ void WifiNTPTest()
 
 	if(!(eventStatus & EVENT_TIMEOUT)){
 		//40バイト目からの4バイトが時間
-		int gotTime = (int)receivedData[43] |
+		uint32_t gotTime = (int)receivedData[43] |
 				      (int)receivedData[42] << 8 |
 					  (int)receivedData[41] << 16 |
 					  (int)receivedData[40] << 24;
@@ -312,22 +312,37 @@ void checkEventState(uint8_t* checkStr, uint16_t length)
 	if(strstr((const char*)checkStr, (const char*)STR_RECEIVE_FROM_SERVER) != NULL){
 		eventStatus |= EVENT_RECEIVE_MESSAGE;
 		//文字数取得
-		char* commaPos = strtok((char*)checkStr, ",");
-		char* colonPos = strtok((char*)commaPos, ":");
+		char str4Count[10];
 
-		char countChar[10];
-		int countLength = (int)(colonPos - commaPos);
+		int startPos = 0;
+		int endPos = 0;
+		int i = 0;
+		while(i < length){
+			if(checkStr[i] == ','){
+				startPos = i + 1;
+			}
 
-		int cnt = 0;
-		for(cnt = 0; cnt < countLength; cnt++){
-			countChar[cnt] = commaPos[cnt];
+			if(checkStr[i] == ':'){
+				endPos = i - 1;
+			}
+
+			if(endPos > startPos){
+				break;
+			}
+			i++;
 		}
-		countChar[cnt] = '\0';
-		receivedDataCnt = atoi((const char*)countChar);
+
+		int j = 0;
+		for(j = 0; j < endPos - startPos + 1; j++){
+			str4Count[j] = checkStr[startPos + j];
+		}
+		str4Count[j] = '\0';
+		receivedDataCnt = atoi((const char*)str4Count);
 
 		//文字列取得
-		for(cnt = 0; cnt < strlen(colonPos); cnt++){
-			receivedData[cnt] = colonPos[cnt];
+		int cnt = 0;
+		for(cnt = 0; cnt < receivedDataCnt; cnt++){
+			receivedData[cnt] = checkStr[endPos + 1 + 1 + cnt];
 		}
 	}
 
