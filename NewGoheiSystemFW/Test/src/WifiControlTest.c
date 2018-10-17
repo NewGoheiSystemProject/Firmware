@@ -198,14 +198,23 @@ void stringBufferingTask()
 		}
 
 		static int cnt = 0;
+
+		static int ipdmodeFlag = 0;
+
 		while(uartCount > 0){
 			if(stringRingCount >= MESSAGE_BUFFER_SINZE){
 				stringWritePos = 0;
 			}
-			if(uartRxBuf[readPos] != '\r' && uartRxBuf[readPos] != '\n'){
+
+			if(uartRxBuf[readPos] == '+' && uartRxBuf[readPos + 1] == 'I'
+					&& uartRxBuf[readPos + 2] == 'P' && uartRxBuf[readPos + 3] == 'D'
+							&& uartRxBuf[readPos + 4] == ','){
+				ipdmodeFlag = 1;
+				break;
+			}
+			else if(uartRxBuf[readPos] != '\r' && uartRxBuf[readPos] != '\n'){
 				receivedStrings[stringWritePos][cnt] = uartRxBuf[readPos];
 				cnt++;
-
 			}
 			else if(uartRxBuf[readPos] == '\r' && uartRxBuf[readPos + 1] == '\n'){
 				stringLength[stringWritePos] = cnt;
@@ -213,8 +222,46 @@ void stringBufferingTask()
 				stringRingCount++;
 				cnt = 0;
 			}
+
 			readPos = (readPos + 1) % DMA_BUFFER_SIZE;
 			uartCount --;
+		}
+
+		int ipdmodeCount = 0;
+		int ipdstringLength = 0;
+
+		if(ipdmodeFlag == 1){
+			char str4Count[10];
+
+			int i = 0;
+
+			while(i + 5 < uartCount){
+				int pos2Read = (readPos + 5 + i) % DMA_BUFFER_SIZE;
+
+				if(uartRxBuf[pos2Read] == ':'){
+					str4Count[i] = '\0';
+					ipdmodeCount = atoi((const char*)str4Count);
+					ipdstringLength = pos2Read - readPos + 1 + ipdmodeCount;
+					break;
+				}
+
+				str4Count[i] = uartRxBuf[pos2Read];
+				i++;
+			}
+
+			int j = 0;
+			for(j = 0; j < ipdstringLength; j++){
+				receivedStrings[stringWritePos][j] = uartRxBuf[readPos];
+				stringLength[stringWritePos]++;
+
+				readPos = (readPos + 1) % DMA_BUFFER_SIZE;
+				uartCount --;
+			}
+
+			stringWritePos = (stringWritePos + 1) % MESSAGE_BUFFER_SINZE;
+			stringRingCount++;
+
+
 		}
 	}
 }
