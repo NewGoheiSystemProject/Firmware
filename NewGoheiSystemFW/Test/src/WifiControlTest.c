@@ -286,7 +286,11 @@ void stringBufferingTask2()
 
 		//データカウントの取得
 		if(readPos < writePos){//バッファ境界を跨いでいないときは普通に減算
-			uartCount = writePos - readPos;
+			uartCount = writePos - readPos + 1;
+			rcvCnt = 0;
+		}
+		else if(readPos == writePos){
+			uartCount = 0;
 			rcvCnt = 0;
 		}
 		else if(rcvCnt > 0){//バッファ境界を跨いだ場合はその計算
@@ -322,14 +326,14 @@ void stringBufferingTask2()
 			}
 
 			if(ipdmodeFlag == 1 && ipdCountGotFlag == 0){//IPDモードで, IPD文字列のカウントが取得できていない場合
-				if(receivedStrings[stringWritePos][stringBufCharPos] == ':'){//最初の':'を発見したら
+				if(receivedStrings[stringWritePos][stringBufCharPos - 1] == ':'){//最初の':'を発見したら
 					//ヘッダ文字列長を取得
 					ipdHeaderStringLength = stringBufCharPos;
 
 					//IPD文字列長を示す文字列から数値を算出
 					char str4IpdmodeCount[10];
 					int k = 0;
-					for(k = 0; k < stringBufCharPos - 5; k++){
+					for(k = 0; k < ipdHeaderStringLength - 1 - 5; k++){//+IPD,と:の分
 						str4IpdmodeCount[k] = receivedStrings[stringWritePos][5 + k];
 					}
 					str4IpdmodeCount[k] = '\0';
@@ -351,8 +355,11 @@ void stringBufferingTask2()
 				ipdStringLength = 0;
 				ipdHeaderStringLength = 0;
 			}
-		}
 
+			readPos = (readPos + 1) % DMA_BUFFER_SIZE;
+
+		}
+		uartCount = 0;
 
 //		static int cnt = 0;
 //
@@ -537,7 +544,7 @@ void wait4Event(uint16_t eventFlag, uint32_t timeout)
 
 	while(!(eventStatus & eventFlag)){
 		//uartrecv
-		stringBufferingTask();
+		stringBufferingTask2();
 
 		//event check
 		eventCheckTask();
