@@ -69,6 +69,8 @@ static int receivedDataCnt = 0;
 static uint8_t receivedData[200];
 
 static void stringBufferingTask();
+static void stringBufferingTask2();
+
 static void eventCheckTask();
 static void checkEventState(uint8_t* checkStr, uint16_t length);
 static void clearEvent();
@@ -276,6 +278,158 @@ void stringBufferingTask()
 		}
 	}
 }
+void stringBufferingTask2()
+{
+	if(__HAL_DMA_GET_COUNTER(&hdma_usart3_rx) < DMA_BUFFER_SIZE){//DMAにデータがあるときのみ
+		//最新データポジションの取得
+		writePos = DMA_BUFFER_SIZE - 1 - __HAL_DMA_GET_COUNTER(&hdma_usart3_rx);
+
+		//データカウントの取得
+		if(readPos < writePos){//バッファ境界を跨いでいないときは普通に減算
+			uartCount = writePos - readPos;
+			rcvCnt = 0;
+		}
+		else if(rcvCnt > 0){//バッファ境界を跨いだ場合はその計算
+			uartCount = DMA_BUFFER_SIZE - readPos + writePos - 1;
+		}
+
+		static int stringBufCharPos = 0;
+		static int ipdmodeFlag = 0;
+		static int ipdCountGotFlag = 0;
+		static int ipdStringLength = 0;
+		static int ipdHeaderStringLength = 0;
+
+		//現在DMAがバッファに格納済みの分を全て処理
+		int cnt = 0;
+		for(cnt = 0; cnt < uartCount; cnt++){
+			if(uartRxBuf[readPos] != '\r' && uartRxBuf[readPos] != '\n'){//改行コード以外は文字列バッファに格納
+				receivedStrings[stringWritePos][stringBufCharPos++] = uartRxBuf[readPos];
+			}
+			else if(uartRxBuf[readPos] == '\r' && uartRxBuf[readPos + 1] == '\n'){
+				stringLength[stringWritePos] = stringBufCharPos;//文字列長格納
+				stringWritePos = (stringWritePos + 1) % MESSAGE_BUFFER_SINZE;
+				stringRingCount++;
+				stringBufCharPos = 0;
+			}
+
+			if(stringBufCharPos == 5 &&
+				receivedStrings[stringWritePos][0] == '+' &&
+				receivedStrings[stringWritePos][1] == 'I' &&
+				receivedStrings[stringWritePos][2] == 'P' &&
+				receivedStrings[stringWritePos][3] == 'D' &&
+				receivedStrings[stringWritePos][4] == ','){//+IPDの後の受信状態に入る
+				ipdmodeFlag = 1;
+			}
+
+			if(ipdmodeFlag == 1 && ipdCountGotFlag == 0){//IPDモードで, IPD文字列のカウントが取得できていない場合
+				if(receivedStrings[stringWritePos][stringBufCharPos] == ':'){//最初の':'を発見したら
+					//ヘッダ文字列長を取得
+					ipdHeaderStringLength = stringBufCharPos;
+
+					//IPD文字列長を示す文字列から数値を算出
+					char str4IpdmodeCount[10];
+					int k = 0;
+					for(k = 0; k < stringBufCharPos - 5; k++){
+						str4IpdmodeCount[k] = receivedStrings[stringWritePos][5 + k];
+					}
+					str4IpdmodeCount[k] = '\0';
+					ipdStringLength = atoi((const char*)str4IpdmodeCount);
+
+					ipdCountGotFlag = 1;
+				}
+			}
+
+			if(ipdmodeFlag == 1 && stringBufCharPos == ipdHeaderStringLength + ipdStringLength){//IPDModeでの文字列受信終了判定
+				stringLength[stringWritePos] = stringBufCharPos;//文字列長格納
+				stringWritePos = (stringWritePos + 1) % MESSAGE_BUFFER_SINZE;
+				stringRingCount++;
+				stringBufCharPos = 0;
+
+				//IPD受信モードから抜ける
+				ipdmodeFlag = 0;
+				ipdCountGotFlag = 0;
+				ipdStringLength = 0;
+				ipdHeaderStringLength = 0;
+			}
+		}
+
+
+//		static int cnt = 0;
+//
+//		static int ipdmodeFlag = 0;
+//		static int ipdmodeCount = 0;
+//		static int ipdmodeHeaderLength = 0;
+//
+//		static int lastByteUnreadFlag = 0;
+//
+//		while(uartCount > 0 || lastByteUnreadFlag == 1){
+//
+//			if(lastByteUnreadFlag == 1){
+//				lastByteUnreadFlag = 0;
+//			}
+//
+//			if(stringRingCount >= MESSAGE_BUFFER_SINZE){
+//				stringWritePos = 0;
+//			}
+//
+//			if(uartRxBuf[readPos] != '\r' && uartRxBuf[readPos] != '\n'){
+//				receivedStrings[stringWritePos][cnt] = uartRxBuf[readPos];
+//
+//				if(cnt + 1 == 5 &&
+//						receivedStrings[stringWritePos][0] == '+' &&
+//						receivedStrings[stringWritePos][1] == 'I' &&
+//						receivedStrings[stringWritePos][2] == 'P' &&
+//						receivedStrings[stringWritePos][3] == 'D' &&
+//						receivedStrings[stringWritePos][4] == ','){
+//					ipdmodeFlag = 1;
+//				}
+//
+//
+//				if(ipdmodeFlag == 1){
+//					if(receivedStrings[stringWritePos][cnt] == ':'){
+//						ipdmodeHeaderLength = cnt + 1;
+//						char str4IpdmodeCount[10];
+//						int k = 0;
+//						for(k = 0; k < cnt - 5; k++){
+//							str4IpdmodeCount[k] = receivedStrings[stringWritePos][5 + k];
+//						}
+//						str4IpdmodeCount[k] = '\0';
+//						ipdmodeCount = atoi((const char*)str4IpdmodeCount);
+//					}
+//				}
+//
+//				if(ipdmodeFlag == 1 && ipdmodeCount + ipdmodeHeaderLength == cnt + 1){
+//					stringLength[stringWritePos] = cnt;
+//					stringWritePos = (stringWritePos + 1) % MESSAGE_BUFFER_SINZE;
+//					stringRingCount++;
+//					cnt = 0;
+//
+//					ipdmodeFlag = 0;
+//					ipdmodeCount = 0;
+//				}
+//				cnt++;
+//			}
+//			else if(uartRxBuf[readPos] == '\r' && uartRxBuf[readPos + 1] == '\n'){
+//				stringLength[stringWritePos] = cnt;
+//				stringWritePos = (stringWritePos + 1) % MESSAGE_BUFFER_SINZE;
+//				stringRingCount++;
+//				cnt = 0;
+//			}
+//
+//			if(lastByteUnreadFlag == 0){
+//				readPos = (readPos + 1) % DMA_BUFFER_SIZE;
+//			}
+//
+//			if(ipdmodeFlag == 1 && uartCount == 1){
+//				lastByteUnreadFlag = 1;
+//			}
+//			if(uartCount > 0){
+//				uartCount --;
+//			}
+//		}
+	}
+}
+
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
 {
