@@ -1,3 +1,14 @@
 2018/10/6
   STM32HALのUARTDMAについて, UARTのGlobalInterruptをONにすると, DMAが機能しない. これをONにしなくても, UARTRxCpltCallBackは走る構造になっている. 
   DMAをcircularモードにセットした場合, バッファの最後まで到達したことを検知するには, UartRxCpltCallbackを使用する
+
+2018/10/15
+  ntp.nict.jpでは, 48バイトのうち, 40バイトからの4バイト分が秒データ
+
+2018/10/16
+  AT+CIPSEND=48のあとのOKが認識できていない模様
+  wait4Event関数の最後に, flagを消したほうがいい
+
+2018/10/17
+  受信待ちの際, +IPDの後に続く文字列には改行がない
+  対応はできたが, なんかreceivedStringのリングバッファが飛ばしてる

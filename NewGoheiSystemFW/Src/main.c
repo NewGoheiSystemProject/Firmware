@@ -118,7 +118,8 @@ int main(void)
   MX_USART3_UART_Init();
 
   /* USER CODE BEGIN 2 */
-  WifiModuleBootTest();
+  WifiNTPTest();
+//  WifiModuleBootTest();
 
   //LCDDriverTest();
   boardControlTaskTest();
