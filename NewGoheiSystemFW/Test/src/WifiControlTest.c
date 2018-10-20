@@ -69,7 +69,6 @@ static int receivedDataCnt = 0;
 static uint8_t receivedData[200];
 
 static void stringBufferingTask();
-static void stringBufferingTask2();
 
 static void eventCheckTask();
 static void checkEventState(uint8_t* checkStr, uint16_t length);
@@ -185,100 +184,13 @@ void WifiNTPTest()
 		uint32_t gotHour = (gotTime % (24 * 60 * 60)) / (60 * 60);
 		uint32_t gotMin = ((gotTime % (24 * 60 * 60)) % (60 * 60)) / 60;
 
-		printf("%d", gotTime);
+		printf("British time %d:%d", gotHour,gotMin);
 	}
 	clearEvent();
 
 
 }
 void stringBufferingTask()
-{
-	if(__HAL_DMA_GET_COUNTER(&hdma_usart3_rx) < DMA_BUFFER_SIZE){
-		writePos = DMA_BUFFER_SIZE - 1 - __HAL_DMA_GET_COUNTER(&hdma_usart3_rx);
-		if(readPos < writePos){
-			uartCount = writePos - readPos;
-			rcvCnt = 0;
-		}
-		else if(rcvCnt > 0){
-			uartCount = DMA_BUFFER_SIZE - readPos + writePos - 1;
-		}
-
-		static int cnt = 0;
-
-		static int ipdmodeFlag = 0;
-		static int ipdmodeCount = 0;
-		static int ipdmodeHeaderLength = 0;
-
-		static int lastByteUnreadFlag = 0;
-
-		while(uartCount > 0 || lastByteUnreadFlag == 1){
-
-			if(lastByteUnreadFlag == 1){
-				lastByteUnreadFlag = 0;
-			}
-
-			if(stringRingCount >= MESSAGE_BUFFER_SINZE){
-				stringWritePos = 0;
-			}
-
-			if(uartRxBuf[readPos] != '\r' && uartRxBuf[readPos] != '\n'){
-				receivedStrings[stringWritePos][cnt] = uartRxBuf[readPos];
-
-				if(cnt + 1 == 5 &&
-						receivedStrings[stringWritePos][0] == '+' &&
-						receivedStrings[stringWritePos][1] == 'I' &&
-						receivedStrings[stringWritePos][2] == 'P' &&
-						receivedStrings[stringWritePos][3] == 'D' &&
-						receivedStrings[stringWritePos][4] == ','){
-					ipdmodeFlag = 1;
-				}
-
-
-				if(ipdmodeFlag == 1){
-					if(receivedStrings[stringWritePos][cnt] == ':'){
-						ipdmodeHeaderLength = cnt + 1;
-						char str4IpdmodeCount[10];
-						int k = 0;
-						for(k = 0; k < cnt - 5; k++){
-							str4IpdmodeCount[k] = receivedStrings[stringWritePos][5 + k];
-						}
-						str4IpdmodeCount[k] = '\0';
-						ipdmodeCount = atoi((const char*)str4IpdmodeCount);
-					}
-				}
-
-				if(ipdmodeFlag == 1 && ipdmodeCount + ipdmodeHeaderLength == cnt + 1){
-					stringLength[stringWritePos] = cnt;
-					stringWritePos = (stringWritePos + 1) % MESSAGE_BUFFER_SINZE;
-					stringRingCount++;
-					cnt = 0;
-
-					ipdmodeFlag = 0;
-					ipdmodeCount = 0;
-				}
-				cnt++;
-			}
-			else if(uartRxBuf[readPos] == '\r' && uartRxBuf[readPos + 1] == '\n'){
-				stringLength[stringWritePos] = cnt;
-				stringWritePos = (stringWritePos + 1) % MESSAGE_BUFFER_SINZE;
-				stringRingCount++;
-				cnt = 0;
-			}
-
-			if(lastByteUnreadFlag == 0){
-				readPos = (readPos + 1) % DMA_BUFFER_SIZE;
-			}
-
-			if(ipdmodeFlag == 1 && uartCount == 1){
-				lastByteUnreadFlag = 1;
-			}
-			if(uartCount > 0){
-				uartCount --;
-			}
-		}
-	}
-}
-void stringBufferingTask2()
 {
 	if(__HAL_DMA_GET_COUNTER(&hdma_usart3_rx) < DMA_BUFFER_SIZE){//DMAにデータがあるときのみ
 		//最新データポジションの取得
@@ -355,96 +267,17 @@ void stringBufferingTask2()
 				ipdStringLength = 0;
 				ipdHeaderStringLength = 0;
 			}
-
 			readPos = (readPos + 1) % DMA_BUFFER_SIZE;
-
 		}
 		uartCount = 0;
-
-//		static int cnt = 0;
-//
-//		static int ipdmodeFlag = 0;
-//		static int ipdmodeCount = 0;
-//		static int ipdmodeHeaderLength = 0;
-//
-//		static int lastByteUnreadFlag = 0;
-//
-//		while(uartCount > 0 || lastByteUnreadFlag == 1){
-//
-//			if(lastByteUnreadFlag == 1){
-//				lastByteUnreadFlag = 0;
-//			}
-//
-//			if(stringRingCount >= MESSAGE_BUFFER_SINZE){
-//				stringWritePos = 0;
-//			}
-//
-//			if(uartRxBuf[readPos] != '\r' && uartRxBuf[readPos] != '\n'){
-//				receivedStrings[stringWritePos][cnt] = uartRxBuf[readPos];
-//
-//				if(cnt + 1 == 5 &&
-//						receivedStrings[stringWritePos][0] == '+' &&
-//						receivedStrings[stringWritePos][1] == 'I' &&
-//						receivedStrings[stringWritePos][2] == 'P' &&
-//						receivedStrings[stringWritePos][3] == 'D' &&
-//						receivedStrings[stringWritePos][4] == ','){
-//					ipdmodeFlag = 1;
-//				}
-//
-//
-//				if(ipdmodeFlag == 1){
-//					if(receivedStrings[stringWritePos][cnt] == ':'){
-//						ipdmodeHeaderLength = cnt + 1;
-//						char str4IpdmodeCount[10];
-//						int k = 0;
-//						for(k = 0; k < cnt - 5; k++){
-//							str4IpdmodeCount[k] = receivedStrings[stringWritePos][5 + k];
-//						}
-//						str4IpdmodeCount[k] = '\0';
-//						ipdmodeCount = atoi((const char*)str4IpdmodeCount);
-//					}
-//				}
-//
-//				if(ipdmodeFlag == 1 && ipdmodeCount + ipdmodeHeaderLength == cnt + 1){
-//					stringLength[stringWritePos] = cnt;
-//					stringWritePos = (stringWritePos + 1) % MESSAGE_BUFFER_SINZE;
-//					stringRingCount++;
-//					cnt = 0;
-//
-//					ipdmodeFlag = 0;
-//					ipdmodeCount = 0;
-//				}
-//				cnt++;
-//			}
-//			else if(uartRxBuf[readPos] == '\r' && uartRxBuf[readPos + 1] == '\n'){
-//				stringLength[stringWritePos] = cnt;
-//				stringWritePos = (stringWritePos + 1) % MESSAGE_BUFFER_SINZE;
-//				stringRingCount++;
-//				cnt = 0;
-//			}
-//
-//			if(lastByteUnreadFlag == 0){
-//				readPos = (readPos + 1) % DMA_BUFFER_SIZE;
-//			}
-//
-//			if(ipdmodeFlag == 1 && uartCount == 1){
-//				lastByteUnreadFlag = 1;
-//			}
-//			if(uartCount > 0){
-//				uartCount --;
-//			}
-//		}
 	}
 }
-
-
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
 {
 	if(huart == &huart3){
 		rcvCnt++;
 	}
 }
-
 void checkEventState(uint8_t* checkStr, uint16_t length)
 {
 	if(length == sizeof(STR_READY) - 1){
@@ -525,7 +358,6 @@ void checkEventState(uint8_t* checkStr, uint16_t length)
 	}
 
 }
-
 void clearEvent()
 {
 	eventStatus = 0;
@@ -544,7 +376,7 @@ void wait4Event(uint16_t eventFlag, uint32_t timeout)
 
 	while(!(eventStatus & eventFlag)){
 		//uartrecv
-		stringBufferingTask2();
+		stringBufferingTask();
 
 		//event check
 		eventCheckTask();
