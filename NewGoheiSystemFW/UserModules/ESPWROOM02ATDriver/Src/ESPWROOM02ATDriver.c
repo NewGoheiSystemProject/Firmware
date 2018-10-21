@@ -14,6 +14,12 @@
 
 #define DMA_BUFFER_SIZE 1024
 
+#define MESSAGE_TIME_OUT 5000
+
+//UartRingBuffer
+static uint8_t uartRxBuf[DMA_BUFFER_SIZE] = {0};
+static uint16_t readPos = 0;
+
 static uint8_t receivedStrings[MESSAGE_BUFFER_SIZE][MESSAGE_MAX_LENGTH] = {0};
 static uint16_t stringLength[MESSAGE_BUFFER_SIZE] = {0};
 static uint8_t stringReadPos = 0;
@@ -62,14 +68,30 @@ void DisableClient()
 }
 void ConnectToAP(const char* APName, const char* APPass)
 {
+	//送信文字列作成
+	char string2Send[100];
+	sprintf(string2Send, "%s\"%s\",\"%s\"%s", CMD_CONNECT_AP, APName, APPass, CMD_NEWLINE);
 
+	//メッセージ送信
+	sendMessage((uint8_t*)string2Send, (uint16_t)strlen((const char*)string2Send));
+
+	//WIFI CONNECTED待ち
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		wait4Event(EVENT_RCV_WIFI_CONNECTED, MESSAGE_TIME_OUT);
+	}
+
+	//WIFI GOT IP 待ち
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		wait4Event(EVENT_RCV_WIFI_GOT_IP, MESSAGE_TIME_OUT);
+	}
+
+	//OK待ち
+	if(!(eventStatus & EVENT_TIMEOUT)){
+		wait4Event(EVENT_OK, MESSAGE_TIME_OUT);
+	}
 }
 void stringBufferingTask()
 {
-	//UartRingBuffer
-	static uint8_t uartRxBuf[DMA_BUFFER_SIZE] = {0};
-	static uint16_t readPos = 0;
-
 	//最新データポジションの取得
 	uint16_t writePos = GetUartDMAPosition();
 
@@ -92,8 +114,6 @@ void stringBufferingTask()
 		static int ipdCountGotFlag = 0;
 		static int ipdStringLength = 0;
 		static int ipdHeaderStringLength = 0;
-
-
 
 		//現在DMAがバッファに格納済みの分を全て処理
 		int cnt = 0;
@@ -286,4 +306,12 @@ __attribute__((weak)) uint32_t GetUartDMAPosition()
 uint32_t GetUartDMABufferSize()
 {
 	return DMA_BUFFER_SIZE;
+}
+uint8_t* GetUartBufferAddress()
+{
+	return uartRxBuf;
+}
+__attribute__((weak)) uint32_t GetUartDMAPosition()
+{
+	return 0;
 }

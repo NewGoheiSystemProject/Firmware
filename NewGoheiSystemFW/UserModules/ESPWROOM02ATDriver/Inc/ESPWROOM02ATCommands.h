@@ -22,5 +22,6 @@ const char CMD_CONNECTION_START[] = "AT+CIPSTART=";
 const char CMD_SENDCOMMAND_NICT[] = "AT+CIPSEND=";
 const char CMD_NEWLINE[]          = "\r\n";
 const char CMD_CONNECTION_CLOSE[] = "AT+CIPCLOSE";
+const char CMD_CONNECT_AP[] = "AT+CWJAP_CUR";
 
 #endif /* ESPWROOM02ATDRIVER_INC_ESPWROOM02ATCOMMANDS_H_ */
