@@ -19,7 +19,6 @@
 #define EVENT_CONNECTED          0x0010
 #define EVENT_RECEIVE_MESSAGE    0x0020
 #define EVENT_SEND_OK            0x0040
-
 #define EVENT_TIMEOUT            0x8000
 
 
